@@ -173,7 +173,7 @@ export function HeroSection() {
       }}
     >
       {/* Floating social icons background */}
-      <div className="absolute inset-0 w-full h-full">
+      <div className="absolute inset-0 w-full h-full hidden md:block pointer-events-none">
         {heroIcons.map((icon, index) => (
           <FloatingIcon key={icon.id} mouseX={mouseX} mouseY={mouseY} iconData={icon} index={index} />
         ))}
@@ -212,16 +212,16 @@ export function HeroSection() {
 
             <div className="pt-8 border-t-2 border-[rgba(26,26,26,0.12)] flex items-center justify-between flex-wrap gap-4">
               <p className="font-bold text-[15px] text-[#1a1a1a]">Supported platforms</p>
-              <div className="flex gap-2.5">
+              <div className="flex gap-2.5 flex-wrap">
                 {[IconX, IconLinkedIn, IconTelegram, IconInstagram, IconFacebook].map((Icon, i) => (
                   <div
                     key={i}
-                    className="w-9 h-9 bg-white rounded-[10px] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                    className="w-9 h-9 bg-white rounded-[10px] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] shrink-0"
                   >
                     <Icon width={20} height={20} />
                   </div>
                 ))}
-                <div className="w-9 h-9 bg-[#1a7352] rounded-[10px] flex items-center justify-center text-white text-[11px] font-extrabold">
+                <div className="w-9 h-9 bg-[#1a7352] rounded-[10px] flex items-center justify-center text-white text-[11px] font-extrabold shrink-0">
                   +5
                 </div>
               </div>
@@ -229,16 +229,13 @@ export function HeroSection() {
           </div>
         </div>
 
-        <div className="relative w-full lg:w-5/12 lg:order-1 overflow-hidden min-h-[400px] lg:min-h-full">
-          <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-8 lg:p-0 lg:translate-x-6">
-            {/* App mockup image */}
-            <div className="relative w-full max-w-[280px] lg:max-w-[340px] flex items-center justify-center hover:scale-105 transition-transform duration-700 ease-out">
-              <img 
-                src="/hero-mockup.png" 
-                alt="Alter Mobile Mockup" 
-                className="w-full h-auto object-contain drop-shadow-[0_32px_64px_rgba(0,0,0,0.15)]"
-              />
-            </div>
+        <div className="relative w-full lg:w-5/12 lg:order-1 flex items-center justify-center pb-12 pt-6 lg:py-0 overflow-hidden">
+          <div className="relative w-full max-w-[280px] lg:max-w-[340px] flex items-center justify-center hover:scale-105 transition-transform duration-700 ease-out lg:translate-x-6">
+            <img 
+              src="/hero-mockup.png" 
+              alt="Alter Mobile Mockup" 
+              className="w-full h-auto object-contain drop-shadow-[0_32px_64px_rgba(0,0,0,0.15)]"
+            />
           </div>
         </div>
       </div>

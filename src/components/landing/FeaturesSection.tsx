@@ -25,7 +25,7 @@ export function FeaturesSection() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6">
           
           {/* Card 1: Top Left - 5 cols */}
-          <div className="md:col-span-5 bg-white rounded-[32px] p-8 md:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#e5e5e5] flex flex-col justify-between min-h-[420px] group transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+          <div className="md:col-span-5 bg-white rounded-[32px] p-6 sm:p-8 md:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#e5e5e5] flex flex-col justify-between min-h-[420px] group transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
             <div className="relative flex-1 bg-gradient-to-br from-[#f8f9fa] to-white rounded-[20px] border border-[#e5e5e5] p-6 flex flex-col justify-center items-center mb-8 overflow-hidden">
                <div className="w-[90%] bg-white rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-[#f0f0f0] p-5 relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
                   <div className="flex gap-2 mb-5 overflow-hidden">
@@ -60,7 +60,7 @@ export function FeaturesSection() {
           </div>
 
           {/* Card 2: Top Right - 7 cols */}
-          <div className="md:col-span-7 bg-white rounded-[32px] p-8 md:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#e5e5e5] flex flex-col relative overflow-hidden min-h-[420px] group transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+          <div className="md:col-span-7 bg-white rounded-[32px] p-6 sm:p-8 md:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#e5e5e5] flex flex-col relative overflow-hidden min-h-[500px] md:min-h-[420px] group transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
              <div className="md:w-[60%] z-10 relative">
                <h3 className="text-[22px] font-bold text-[#1a1a1a] mb-3">Seamless Multi-Platform</h3>
                <p className="text-[15px] text-[#666] leading-[1.6]">Easily generate content for LinkedIn, X, and Telegram. Watch your workflow flow like dunes in a gentle desert breeze.</p>
@@ -89,7 +89,7 @@ export function FeaturesSection() {
           </div>
 
           {/* Card 3: Bottom Left - 4 cols */}
-          <div className="md:col-span-4 bg-white rounded-[32px] p-8 md:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#e5e5e5] flex flex-col justify-between min-h-[380px] group transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+          <div className="md:col-span-4 bg-white rounded-[32px] p-6 sm:p-8 md:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#e5e5e5] flex flex-col justify-between min-h-[380px] group transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
              <div className="relative mb-12 flex justify-center items-center h-[140px]">
                 {/* Avatars */}
                 <div className="flex items-center justify-center">
@@ -113,7 +113,7 @@ export function FeaturesSection() {
           </div>
 
           {/* Card 4: Bottom Right - 8 cols */}
-          <div className="md:col-span-8 bg-white rounded-[32px] p-8 md:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#e5e5e5] flex flex-col justify-between min-h-[380px] group transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] overflow-hidden relative">
+          <div className="md:col-span-8 bg-white rounded-[32px] p-6 sm:p-8 md:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#e5e5e5] flex flex-col justify-between min-h-[500px] md:min-h-[380px] group transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] overflow-hidden relative">
              <div className="relative z-20">
                <h3 className="text-[22px] font-bold text-[#1a1a1a] mb-3">Intelligent conversational AI</h3>
                <p className="text-[15px] text-[#666] leading-[1.6] max-w-[400px]">Harness advanced models like GPT, Claude, and Gemini for insightful, tailored interactions that drive creativity and solutions.</p>

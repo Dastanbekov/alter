@@ -146,7 +146,7 @@ export function HowItWorksSection() {
               layout
               key={step.id}
               onMouseEnter={() => setActiveId(step.id)}
-              className={`relative rounded-[32px] cursor-pointer overflow-hidden transition-colors duration-500 ${
+              className={`relative rounded-[32px] min-h-[350px] md:min-h-0 cursor-pointer overflow-hidden transition-colors duration-500 ${
                 isActive ? "md:w-[50%] bg-[#eef5f2]" : "md:w-[25%] bg-[#f8f9fa] hover:bg-[#f0f0f0]"
               }`}
             >

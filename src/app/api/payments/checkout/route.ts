@@ -22,11 +22,9 @@ export async function POST(req: NextRequest) {
     }
 
     const checkout = await polar.checkouts.create({
-      productId,
-      customerOptions: {
-        customerEmail: session.user.email || undefined,
-        customerName: session.user.name || undefined,
-      },
+      products: [productId],
+      customerEmail: session.user.email || undefined,
+      customerName: session.user.name || undefined,
       metadata: {
         userId: session.user.id,
         postsAmount: postsAmount?.toString() || "0",

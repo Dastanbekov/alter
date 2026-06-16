@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Product ID required" }, { status: 400 });
     }
 
-    const checkout = await polar.checkouts.custom.create({
+    const checkout = await polar.checkouts.create({
       productId,
       customerOptions: {
         customerEmail: session.user.email || undefined,

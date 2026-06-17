@@ -15,21 +15,21 @@ export function OnboardingStep2({ data, onChange, onNext, onBack }: Props) {
 
   const config = {
     project: {
-      title: "Как называется ваш проект?",
-      placeholder: "Например: Acme SaaS, ProductX, My Startup...",
-      label: "Название проекта",
+      title: "What is your project's name?",
+      placeholder: "e.g., Acme SaaS, ProductX, My Startup...",
+      label: "Project Name",
       hint: null,
     },
     blog: {
-      title: "Как вас называть?",
-      placeholder: "Ваше имя или псевдоним...",
-      label: "Имя / псевдоним",
-      hint: "Вы всегда сможете поменять это в настройках или сказать AI напрямую, какое имя использовать в конкретном посте.",
+      title: "What should we call you?",
+      placeholder: "Your name or nickname...",
+      label: "Name / Nickname",
+      hint: "You can always change this in settings or tell the AI directly which name to use in a specific post.",
     },
     other: {
-      title: "Опишите кратко",
-      placeholder: "Расскажите немного о том, для чего вы будете вести соцсети...",
-      label: "Описание",
+      title: "Describe briefly",
+      placeholder: "Tell us a bit about why you want to manage social media...",
+      label: "Description",
       hint: null,
     },
   };
@@ -43,7 +43,7 @@ export function OnboardingStep2({ data, onChange, onNext, onBack }: Props) {
           {currentConfig.title}
         </h2>
         <p className="text-[14px] sm:text-[15px] text-[var(--text-secondary)]">
-          Мы будем использовать это для генерации постов.
+          We will use this to generate posts tailored for you.
         </p>
       </div>
       <div className="mb-6">
@@ -54,6 +54,9 @@ export function OnboardingStep2({ data, onChange, onNext, onBack }: Props) {
           id="onboarding-details"
           type="text"
           className="input text-[16px] px-[18px] py-[14px]"
+          value={data.details}
+          onChange={(e) => onChange({ details: e.target.value })}
+          placeholder={currentConfig.placeholder}
           autoFocus
         />
       </div>

@@ -27,30 +27,30 @@ export function OnboardingStep4({ data, onChange, onFinish, onBack, loading }: P
           <CheckCircle2 size={30} color="#1a7352" />
         </div>
         <h2 className="font-['Outfit'] text-2xl sm:text-[28px] font-bold mb-3 text-[var(--text-primary)]">
-          Как назовём workspace?
+          What should we name your workspace?
         </h2>
         <p className="text-[14px] sm:text-[15px] text-[var(--text-secondary)]">
-          Это будет вашим личным кабинетом.
+          This will be your workspace environment.
         </p>
       </div>
       {/* Summary of choices */}
       <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-[14px] p-4 sm:px-5 mb-6">
         <div className="text-[11px] sm:text-[12px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2.5">
-          Ваши настройки
+          Your Settings
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex justify-between text-[12px] sm:text-[13px]">
-            <span className="text-[var(--text-muted)]">Тип</span>
+            <span className="text-[var(--text-muted)]">Type</span>
             <span className="text-[var(--text-primary)] font-semibold">
-              {data.purpose === "project" ? "🚀 Проект" : data.purpose === "blog" ? "📝 Личный блог" : "💡 Другое"}
+              {data.purpose === "project" ? "🚀 Project" : data.purpose === "blog" ? "📝 Personal Blog" : "💡 Other"}
             </span>
           </div>
           <div className="flex justify-between text-[12px] sm:text-[13px]">
-            <span className="text-[var(--text-muted)]">Детали</span>
+            <span className="text-[var(--text-muted)]">Details</span>
             <span className="text-[var(--text-primary)] font-semibold">{data.details || "—"}</span>
           </div>
           <div className="flex justify-between text-[12px] sm:text-[13px]">
-            <span className="text-[var(--text-muted)]">Платформы</span>
+            <span className="text-[var(--text-muted)]">Platforms</span>
             <span className="text-[var(--text-primary)] font-semibold text-right max-w-[60%] sm:max-w-none">
               {data.platforms.map((p) => PLATFORM_LABELS[p]).join(", ")}
             </span>
@@ -61,12 +61,15 @@ export function OnboardingStep4({ data, onChange, onFinish, onBack, loading }: P
       {/* Workspace name input */}
       <div className="mb-8">
         <label className="text-[13px] font-semibold text-[var(--text-secondary)] block mb-2">
-          Название workspace
+          Workspace Name
         </label>
         <input
           id="onboarding-workspace-name"
           type="text"
           className="input text-[16px] px-[18px] py-[14px]"
+          value={data.workspaceName}
+          onChange={(e) => onChange({ workspaceName: e.target.value })}
+          placeholder="e.g., My Workspace, Acme Corp..."
           autoFocus
         />
       </div>

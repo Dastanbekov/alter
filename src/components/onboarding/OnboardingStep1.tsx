@@ -14,22 +14,22 @@ const OPTIONS = [
     value: "project" as const,
     icon: <Rocket size={28} />,
     color: "#1a7352",
-    title: "Проект",
-    description: "Продукт, стартап, бизнес или компания",
+    title: "Project",
+    description: "A product, startup, business or company",
   },
   {
     value: "blog" as const,
     icon: <BookOpen size={28} />,
     color: "#a855f7",
-    title: "Личный блог",
-    description: "Личный бренд, экспертный контент",
+    title: "Personal Blog",
+    description: "Personal brand, expert content, or side project",
   },
   {
     value: "other" as const,
     icon: <Lightbulb size={28} />,
     color: "#f59e0b",
-    title: "Другое",
-    description: "Что-то уникальное",
+    title: "Other",
+    description: "Something unique",
   },
 ];
 
@@ -40,10 +40,10 @@ export function OnboardingStep1({ data, onChange, onNext }: Props) {
     <div className="glass rounded-[20px] p-6 sm:p-10">
       <div className="text-center mb-8 sm:mb-9">
         <h2 className="font-['Outfit'] text-2xl sm:text-[28px] font-bold mb-3 text-[var(--text-primary)]">
-          Для чего вы хотите вести соцсети?
+          Why do you want to manage social media?
         </h2>
         <p className="text-[14px] sm:text-[15px] text-[var(--text-secondary)]">
-          Это поможет нам лучше настроить AI под ваши задачи.
+          This will help us customize the AI to best fit your goals.
         </p>
       </div>
       <div className="flex flex-col gap-3 mb-8">

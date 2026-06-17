@@ -75,10 +75,10 @@ export function OnboardingStep3({ data, onChange, onNext, onBack }: Props) {
     <div className="glass rounded-[20px] p-6 sm:p-10">
       <div className="text-center mb-8 sm:mb-9">
         <h2 className="font-['Outfit'] text-2xl sm:text-[28px] font-bold mb-3 text-[var(--text-primary)]">
-          Выберите платформы
+          Select Platforms
         </h2>
         <p className="text-[14px] sm:text-[15px] text-[var(--text-secondary)]">
-          Где вы планируете публиковаться?
+          Where do you plan to publish?
         </p>
       </div>
       {/* Available platforms */}
@@ -165,7 +165,7 @@ export function OnboardingStep3({ data, onChange, onNext, onBack }: Props) {
       <div className="flex gap-[10px] p-3 sm:p-4 bg-[rgba(26,115,82,0.08)] border border-[rgba(26,115,82,0.2)] rounded-xl mb-7">
         <Info size={15} color="#1a7352" className="shrink-0 mt-[1px]" />
         <p className="text-[11px] sm:text-[12px] text-[var(--text-secondary)] leading-relaxed">
-          Вы сможете подключить аккаунты в настройках позже. Пока что AI просто будет знать, для каких форматов генерировать контент.
+          You can connect your social accounts in settings later. For now, the AI will simply know which formats to generate content for.
         </p>
       </div>
 

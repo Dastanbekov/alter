@@ -29,7 +29,8 @@ export default withAuth(
           pathname.startsWith("/register") ||
           pathname.startsWith("/api/auth") ||
           pathname.startsWith("/_next") ||
-          pathname.startsWith("/favicon")
+          pathname.startsWith("/favicon") ||
+          pathname.includes(".")
         ) {
           return true;
         }
@@ -42,6 +43,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|images).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)",
   ],
 };

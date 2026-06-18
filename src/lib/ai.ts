@@ -37,7 +37,6 @@ const PLATFORM_INSTRUCTIONS: Record<string, string> = {
   telegram: `Write a Telegram channel post. Rules:
 - Conversational and direct
 - Can be longer than Twitter but concise
-- Use **bold** for emphasis (Markdown)
 - Can use emoji
 - No hashtags needed
 - Feels like talking to subscribers directly`,
@@ -61,6 +60,12 @@ The user wants to post about:
 "${item.context}"
 
 ${platformInstructions}${tovInstruction}
+
+FORMATTING STRICT RULES:
+- DO NOT use markdown bold formatting (no **text**).
+- DO NOT use long em-dashes (—). Use regular hyphens if needed.
+- DO NOT break every single sentence into a new paragraph. Group text logically into cohesive paragraphs.
+- The Hook (first sentence) should be separated by a blank line, but keep the rest of the text grouped by meaning to avoid excessive spacing.
 
 Write ONLY the post content. No explanations, no "Here's your post:", just the raw post text.`;
 

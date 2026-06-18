@@ -72,6 +72,7 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>([]);
   const [editingPost, setEditingPost] = useState<{groupId: string, post: GeneratedPostItem} | null>(null);
   const [chatMode, setChatMode] = useState<"post" | "story">("post");
+  const [chatTitle, setChatTitle] = useState("New Chat");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -123,6 +124,10 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
       if (!res.ok) {
         toast.error("Chat failed");
         return;
+      }
+
+      if (data.chatTitle) {
+        setChatTitle(data.chatTitle);
       }
 
       let responseContent = data.text;
@@ -249,39 +254,15 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
         className="w-full text-left bg-[var(--surface-1)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between transition-colors duration-200 cursor-pointer hover:bg-[var(--surface-2)] shrink-0"
         title="Open workspace settings"
       >
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="font-['Outfit'] text-[18px] font-bold text-[var(--text-primary)]">
-              {workspace.name}
-            </h1>
-            <Settings size={14} className="text-[var(--text-muted)]" />
+        <div className="flex flex-col">
+          <div className="font-['Outfit'] font-bold text-[18px] text-[var(--text-primary)]">
+            {chatTitle}
           </div>
-          {/* Platform indicators */}
-          <div className="flex flex-wrap gap-1.5 items-center">
-            {connectedPlatforms.map((platform) => {
-              const info = PLATFORM_INFO[platform];
-              return (
-                <div
-                  key={platform}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border"
-                  style={{
-                    backgroundColor: `${info.color}15`,
-                    borderColor: `${info.color}30`,
-                    color: info.color,
-                  }}
-                >
-                  {info.icon}
-                  {info.label}
-                </div>
-              );
-            })}
-            {connectedPlatforms.length === 0 && (
-              <span className="text-[12px] text-[var(--text-muted)]">
-                Click to add integrations
-              </span>
-            )}
+          <div className="text-[13px] text-[var(--text-secondary)]">
+            Workspace: {workspace.name}
           </div>
         </div>
+        <Settings size={20} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors" />
       </button>
 
       <WorkspaceSettingsModal
@@ -464,16 +445,13 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
                           <button
                             key={p}
                             onClick={() => {
-                              if (!isConnected) return;
                               if (isSelected) setSelectedPlatforms(selectedPlatforms.filter(x => x !== p));
                               else setSelectedPlatforms([...selectedPlatforms, p]);
                             }}
                             className={`flex flex-col items-center justify-center gap-2 p-4 rounded-[16px] border-2 transition-all duration-200 text-center ${
-                              isConnected 
-                                ? isSelected 
-                                  ? "border-[#1a7352] bg-[rgba(26,115,82,0.05)] shadow-sm" 
-                                  : "border-[var(--border)] bg-[var(--surface-1)] hover:border-[#1a7352] hover:bg-[var(--surface-2)] cursor-pointer"
-                                : "border-[var(--border)] bg-[var(--surface-1)] opacity-60 cursor-not-allowed"
+                              isSelected 
+                                ? "border-[#1a7352] bg-[rgba(26,115,82,0.05)] shadow-sm" 
+                                : "border-[var(--border)] bg-[var(--surface-1)] hover:border-[#1a7352] hover:bg-[var(--surface-2)] cursor-pointer"
                             }`}
                           >
                             <div className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ background: info.color }}>
@@ -481,9 +459,9 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
                             </div>
                             <div className="text-[14px] font-bold text-[var(--text-primary)]">{info.label}</div>
                             {!isConnected && (
-                              <a href="/settings" className="text-[11px] text-[#f59e0b] hover:underline" onClick={e => e.stopPropagation()}>
-                                Connect me!
-                              </a>
+                              <div className="text-[11px] text-[#f59e0b] font-medium" onClick={e => e.stopPropagation()}>
+                                Not connected
+                              </div>
                             )}
                           </button>
                         );
@@ -621,14 +599,11 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
           <>
             <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-[16px] px-4 py-3 flex gap-3 items-end transition-colors duration-200 focus-within:border-[rgba(67,56,255,0.5)] shadow-sm">
               {(() => {
-                const isSessionLocked = messages.some(m => m.postGroup);
                 const hasPendingQuestionnaire = messages.some(m => m.questionnaire && !m.isFormSubmitted);
-                const isInputDisabled = isSessionLocked || hasPendingQuestionnaire;
+                const isInputDisabled = hasPendingQuestionnaire;
 
                 let placeholder = "What's happening? Tell me and I'll create posts for you...";
-                if (isSessionLocked) {
-                  placeholder = "Session complete. Click 'New Post' to start a new thread.";
-                } else if (hasPendingQuestionnaire) {
+                if (hasPendingQuestionnaire) {
                   placeholder = "Please fill out the form above to continue.";
                 }
 
@@ -654,7 +629,7 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
               <button
                 id="chat-send"
                 onClick={handleSend}
-                disabled={!input.trim() || generating || messages.some(m => m.postGroup) || messages.some(m => m.questionnaire && !m.isFormSubmitted)}
+                disabled={!input.trim() || generating || messages.some(m => m.questionnaire && !m.isFormSubmitted)}
                 className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-200 disabled:bg-[var(--surface-4)] disabled:cursor-not-allowed disabled:shadow-none disabled:text-[var(--text-muted)] bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-white cursor-pointer shadow-[0_4px_12px_rgba(26,115,82,0.3)] hover:shadow-[0_4px_16px_rgba(26,115,82,0.4)] hover:-translate-y-[1px]"
               >
                 <ArrowUp size={18} strokeWidth={2.5} />

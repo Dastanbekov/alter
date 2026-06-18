@@ -48,7 +48,23 @@ Remember: your only job is to guide the user to fill out ONE questionnaire and t
 
     const text = response.choices[0]?.message?.content?.trim() || "";
 
-    return NextResponse.json({ text });
+    let chatTitle = null;
+    if (messages.length === 1) {
+      try {
+        const titleRes = await openai.chat.completions.create({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: "You are a helpful AI. Given the following user message, generate a short, 3-5 word title for the chat. ONLY output the title, no quotes or explanation." },
+            { role: "user", content: messages[0].content }
+          ]
+        });
+        chatTitle = titleRes.choices[0]?.message?.content?.trim() || "New Chat";
+      } catch (e) {
+        chatTitle = "New Chat";
+      }
+    }
+
+    return NextResponse.json({ text, chatTitle });
   } catch (error) {
     console.error("[AI_CHAT]", error);
     return NextResponse.json({ error: "Chat failed" }, { status: 500 });

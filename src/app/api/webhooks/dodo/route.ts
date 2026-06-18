@@ -27,8 +27,15 @@ export async function POST(req: NextRequest) {
     if (event.type === "payment.succeeded") {
       const payment = event.data;
       
-      const metadata = payment.metadata || {};
-      const userId = metadata.userId;
+      // 🔍 DEBUG: log full payload to see structure
+      console.log("[WEBHOOK_DEBUG] Full event:", JSON.stringify(event, null, 2));
+      console.log("[WEBHOOK_DEBUG] payment.metadata:", JSON.stringify(payment.metadata, null, 2));
+      console.log("[WEBHOOK_DEBUG] payment.payment_link:", JSON.stringify(payment.payment_link, null, 2));
+
+      const metadata = payment.metadata 
+        || payment.payment_link?.metadata 
+        || {};
+      const userId = metadata.userId || metadata.user_id;
       const postsAmount = metadata.postsAmount ? parseInt(metadata.postsAmount, 10) : 0;
 
       if (userId && postsAmount > 0) {

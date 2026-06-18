@@ -7,9 +7,10 @@ import {
   Zap,
   Plus,
   Settings,
-  Calendar,
   ChevronRight,
+  ChevronDown,
   LogOut,
+  Calendar,
   User,
   Briefcase,
   BookOpen,
@@ -58,6 +59,28 @@ export function Sidebar({
   const [collapsed, setCollapsed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [stories, setStories] = useState<{ id: string; title: string; workspaceId: string; status: string }[]>([]);
+
+  const [expandedWorkspaces, setExpandedWorkspaces] = useState<Record<string, boolean>>({});
+  const [workspacePosts, setWorkspacePosts] = useState<Record<string, any[]>>({});
+
+  const toggleWorkspace = async (e: React.MouseEvent, wsId: string) => {
+    e.stopPropagation();
+    const isExpanded = !expandedWorkspaces[wsId];
+    setExpandedWorkspaces(prev => ({ ...prev, [wsId]: isExpanded }));
+
+    // Fetch posts if opening and we haven't fetched yet
+    if (isExpanded && !workspacePosts[wsId]) {
+      try {
+        const res = await fetch(`/api/posts?workspaceId=${wsId}`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setWorkspacePosts(prev => ({ ...prev, [wsId]: data }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch posts", err);
+      }
+    }
+  };
 
   useEffect(() => {
     fetch("/api/stories")
@@ -146,19 +169,19 @@ export function Sidebar({
         {workspaces.map((ws) => {
           const isActive = ws.id === activeWorkspaceId && currentView === "chat";
           return (
-            <button
-              key={ws.id}
-              onClick={() => {
-                onSelectWorkspace(ws.id);
-                onSelectView("chat");
-                onCloseMobile?.();
-              }}
-              title={collapsed ? ws.name : undefined}
-              className={`w-full flex items-center gap-2.5 rounded-[10px] border-none cursor-pointer text-left transition-all duration-200 mb-0.5
-                ${collapsed ? "p-2.5 justify-center" : "py-2.5 px-3 justify-start"}
-                ${isActive ? "bg-[rgba(26,115,82,0.15)]" : "bg-transparent hover:bg-[var(--surface-3)]"}
-              `}
-            >
+            <div key={ws.id} className="relative">
+              <button
+                onClick={() => {
+                  onSelectWorkspace(ws.id);
+                  onSelectView("chat");
+                  onCloseMobile?.();
+                }}
+                title={collapsed ? ws.name : undefined}
+                className={`w-full flex items-center gap-2.5 rounded-[10px] border-none cursor-pointer text-left transition-all duration-200 mb-0.5
+                  ${collapsed ? "p-2.5 justify-center" : "py-2.5 px-3 justify-start"}
+                  ${isActive ? "bg-[rgba(26,115,82,0.15)]" : "bg-transparent hover:bg-[var(--surface-3)]"}
+                `}
+              >
               {/* Avatar */}
               <div
                 className={`w-8 h-8 rounded-lg flex items-center justify-center font-['Outfit'] font-bold text-[13px] shrink-0
@@ -185,7 +208,42 @@ export function Sidebar({
                   </div>
                 </div>
               )}
-            </button>
+              </button>
+
+              {/* Expand Workspace Button */}
+              {!collapsed && (
+                <button
+                  onClick={(e) => toggleWorkspace(e, ws.id)}
+                  className="absolute right-3 top-[18px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-1"
+                >
+                  {expandedWorkspaces[ws.id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                </button>
+              )}
+
+              {/* Expanded Posts List */}
+              {!collapsed && expandedWorkspaces[ws.id] && (
+                <div className="w-full flex flex-col pl-11 pr-3 pb-2 gap-1 animate-in slide-in-from-top-2">
+                  {(workspacePosts[ws.id] || []).length === 0 ? (
+                    <div className="text-[11px] text-[var(--text-muted)] py-1">No posts yet</div>
+                  ) : (
+                    workspacePosts[ws.id].map(post => (
+                      <button
+                        key={post.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(post.content);
+                          import("react-hot-toast").then(mod => mod.default.success("Post content copied to clipboard!"));
+                        }}
+                        className="text-left truncate w-full text-[12px] text-[var(--text-secondary)] hover:text-[#1a7352] py-1 transition-colors pl-2 border-l-2 border-transparent hover:border-[#1a7352]"
+                      >
+                        <span className="font-semibold capitalize text-[var(--text-primary)] mr-1">{post.platform}:</span>
+                        {post.content.slice(0, 40)}...
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
           );
         })}
 

@@ -60,6 +60,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
   const platform = PLATFORM_CONFIG[post.platform];
   const charLimit = platform.charLimit;
   const overLimit = charLimit && post.content.length > charLimit;
+  const isConnected = workspace.socials.some(s => s.platform === post.platform);
 
   const handleRefine = async () => {
     if (!editInstruction.trim()) return;
@@ -94,6 +95,10 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
   };
 
   const handlePublish = async () => {
+    if (!isConnected) {
+      toast.error(`Please connect ${platform.label} first in Settings`);
+      return;
+    }
     setPublishing(true);
     try {
       const res = await fetch("/api/posts", {
@@ -221,7 +226,13 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
         {!published && (
           <div className="border-t border-[var(--border)] px-4 py-3 flex gap-2.5 justify-end">
             <button
-              onClick={() => setShowSchedule(true)}
+              onClick={() => {
+                if (!isConnected) {
+                  toast.error(`Please connect ${platform.label} first in Settings`);
+                  return;
+                }
+                setShowSchedule(true);
+              }}
               className="btn btn-secondary btn-sm"
             >
               <Clock size={14} />
@@ -253,7 +264,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
           <div className="border-t border-[rgba(34,197,94,0.3)] px-4 py-3 flex items-center gap-2 bg-[rgba(34,197,94,0.05)]">
             <Check size={16} color="#22c55e" />
             <span className="text-[13px] text-[#22c55e] font-semibold">
-              Published to {platform.label}
+              Submitted to {platform.label}
             </span>
           </div>
         )}

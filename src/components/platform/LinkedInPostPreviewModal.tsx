@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Send, Clock, Image as ImageIcon, Trash2, Check } from "lucide-react";
 import toast from "react-hot-toast";
+import { ScheduleModal } from "./ScheduleModal";
 import type { GeneratedPostItem, Workspace } from "@/types";
 
 interface Props {
@@ -19,6 +20,7 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
   const [files, setFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -71,7 +73,13 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
     });
   };
 
+  const isConnected = workspace.socials.some(s => s.platform === "linkedin");
+
   const handlePublish = async () => {
+    if (!isConnected) {
+      toast.error(`Please connect LinkedIn first in Settings`);
+      return;
+    }
     setPublishing(true);
     try {
       const base64Images = await Promise.all(files.map(f => getBase64(f)));
@@ -232,12 +240,19 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
           <div className="flex justify-end gap-3">
             {published ? (
               <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full font-semibold text-[14px]">
-                <Check size={18} /> Published
+                <Check size={18} /> Submitted
               </div>
             ) : (
               <>
                 <button
-                  className="px-4 py-2 rounded-full border border-gray-500 text-gray-600 font-semibold text-[15px] hover:bg-gray-50 hover:border-gray-700 transition-all flex items-center gap-2"
+                  onClick={() => {
+                    if (!isConnected) {
+                      toast.error(`Please connect LinkedIn first in Settings`);
+                      return;
+                    }
+                    setShowSchedule(true);
+                  }}
+                  className="px-4 py-2 rounded-full border border-gray-500 text-gray-600 font-semibold text-[15px] hover:bg-gray-50 hover:border-gray-700 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Clock size={16} /> Schedule
                 </button>
@@ -253,6 +268,21 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
           </div>
         </div>
       </div>
+
+      {showSchedule && (
+        <ScheduleModal
+          post={{ ...post, content }}
+          workspace={workspace}
+          onClose={() => setShowSchedule(false)}
+          onScheduled={() => {
+            setShowSchedule(false);
+            setPublished(true);
+            toast.success(`Scheduled for LinkedIn!`);
+            onUpdate(content);
+            setTimeout(onClose, 2000);
+          }}
+        />
+      )}
     </div>
   );
 }

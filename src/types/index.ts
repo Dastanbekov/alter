@@ -70,3 +70,24 @@ export interface OnboardingData {
   platforms: SocialPlatform[];
   workspaceName: string;
 }
+
+export interface StoryNode {
+  id: string;
+  label: string;          // e.g. "The Problem"
+  day: number;            // relative campaign day: 1, 3, 5…
+  scheduledAt: string;    // ISO datetime string chosen by AI
+  platform: SocialPlatform;
+  content: string;
+}
+
+export interface Story {
+  id: string;
+  workspaceId: string;
+  title: string;
+  brief: string;
+  platforms: SocialPlatform[];
+  nodes: StoryNode[];
+  status: "draft" | "approved";
+  createdAt: string;
+  updatedAt: string;
+}

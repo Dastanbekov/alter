@@ -78,6 +78,7 @@ model Workspace {
   posts         Post[]
   chatMessages  ChatMessage[]
   integrations  Integration[]
+  stories       Story[]
 }
 
 model WorkspaceSocial {
@@ -130,4 +131,18 @@ model Integration {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, platform])
+}
+
+model Story {
+  id          String   @id @default(cuid())
+  workspaceId String
+  title       String
+  brief       String
+  platforms   String   // JSON: ["linkedin", "x"]
+  nodes       String   // JSON: StoryNode[]
+  status      String   @default("draft") // draft | approved
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }

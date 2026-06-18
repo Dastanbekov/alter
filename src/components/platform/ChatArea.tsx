@@ -6,9 +6,11 @@ import toast from "react-hot-toast";
 import { PostCard } from "./PostCard";
 import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
 import { LinkedInPostPreviewModal } from "./LinkedInPostPreviewModal";
+import { StoryModePanel } from "./StoryModePanel";
 import type { Workspace, GeneratedPostGroup, GeneratedPostItem, SocialPlatform } from "@/types";
 import { nanoid } from "nanoid";
 import { QuestionnaireForm, type Question } from "./QuestionnaireForm";
+
 
 interface ChatMsg {
   id: string;
@@ -69,6 +71,7 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>([]);
   const [editingPost, setEditingPost] = useState<{groupId: string, post: GeneratedPostItem} | null>(null);
+  const [chatMode, setChatMode] = useState<"post" | "story">("post");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -287,7 +290,11 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
         onUpdateName={() => window.location.reload()}
       />
 
-      {/* Messages */}
+      {/* Story Mode Panel (replaces messages area when in story mode) */}
+      {chatMode === "story" ? (
+        <StoryModePanel workspace={workspace} onBillingUpdate={onBillingUpdate} />
+      ) : (
+        <>
       <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5 relative">
         {messages.length === 0 && (
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 pt-10 pb-8">
@@ -550,10 +557,36 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
 
         <div ref={messagesEndRef} />
       </div>
+        </>
+      )}
 
       {/* Input area */}
       <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--surface-1)] shrink-0 z-10">
-        <div className="flex justify-between items-center mb-3">
+        {/* Mode toggle pill */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="inline-flex items-center gap-0.5 bg-[var(--surface-3)] rounded-full p-0.5 border border-[var(--border)]">
+            <button
+              onClick={() => setChatMode("post")}
+              className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold transition-all duration-200 cursor-pointer ${
+                chatMode === "post"
+                  ? "bg-[var(--surface-1)] text-[var(--text-primary)] shadow-sm border border-[var(--border)]"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+              }`}
+            >
+              Post
+            </button>
+            <button
+              onClick={() => setChatMode("story")}
+              className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold transition-all duration-200 cursor-pointer ${
+                chatMode === "story"
+                  ? "bg-gradient-to-r from-[#1a7352] to-[#2d9e6f] text-white shadow-sm"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+              }`}
+            >
+              🗺️ Story
+            </button>
+          </div>
+
           <div className="flex flex-wrap gap-4">
             {messages.length > 0 && (
               <button
@@ -629,7 +662,9 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
         </div>
       </div>
 
-      {editingPost && editingPost.post.platform === "linkedin" && (
+      {chatMode === "post" && (
+        <>
+          {editingPost && editingPost.post.platform === "linkedin" && (
         <LinkedInPostPreviewModal
           post={editingPost.post}
           workspace={workspace}
@@ -654,6 +689,8 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
             </button>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

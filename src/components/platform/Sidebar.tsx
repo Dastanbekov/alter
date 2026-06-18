@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -14,18 +14,22 @@ import {
   Briefcase,
   BookOpen,
   Lightbulb,
+  Map,
   X
 } from "lucide-react";
 import type { Workspace } from "@/types";
 import { NewWorkspaceModal } from "./NewWorkspaceModal";
+
 
 interface Props {
   workspaces: Workspace[];
   activeWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onWorkspacesChange: () => void;
-  currentView: "chat" | "scheduled" | "billing";
-  onSelectView: (view: "chat" | "scheduled" | "billing") => void;
+  currentView: "chat" | "scheduled" | "billing" | "story";
+  onSelectView: (view: "chat" | "scheduled" | "billing" | "story") => void;
+  onSelectStory?: (storyId: string) => void;
+  activeStoryId?: string | null;
   isPro: boolean;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
@@ -44,6 +48,8 @@ export function Sidebar({
   onWorkspacesChange,
   currentView,
   onSelectView,
+  onSelectStory,
+  activeStoryId,
   isPro,
   isMobileOpen,
   onCloseMobile,
@@ -51,6 +57,16 @@ export function Sidebar({
   const { data: session } = useSession();
   const [collapsed, setCollapsed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [stories, setStories] = useState<{ id: string; title: string; workspaceId: string; status: string }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/stories")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setStories(data);
+      })
+      .catch(() => {});
+  }, [currentView]);
 
   return (
     <>
@@ -213,6 +229,47 @@ export function Sidebar({
             </div>
           )}
         </button>
+
+        {/* Stories */}
+        {stories.length > 0 && (
+          <>
+            {!collapsed && (
+              <div className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-[0.08em] px-2 pb-1 pt-3">
+                Stories
+              </div>
+            )}
+            {stories.map((story) => {
+              const isActive = currentView === "story" && activeStoryId === story.id;
+              return (
+                <button
+                  key={story.id}
+                  onClick={() => {
+                    onSelectStory?.(story.id);
+                    onSelectView("story");
+                    onCloseMobile?.();
+                  }}
+                  title={collapsed ? story.title : undefined}
+                  className={`w-full flex items-center gap-2.5 rounded-[10px] border-none cursor-pointer text-left transition-all duration-200 mb-0.5
+                    ${collapsed ? "p-2.5 justify-center" : "py-2 px-3 justify-start"}
+                    ${isActive ? "bg-[rgba(26,115,82,0.15)]" : "bg-transparent hover:bg-[var(--surface-3)]"}
+                  `}
+                >
+                  <Map size={15} color={isActive ? "#1a7352" : undefined} className={isActive ? "" : "text-[var(--text-muted)]"} />
+                  {!collapsed && (
+                    <div className="flex-1 overflow-hidden">
+                      <div className={`truncate text-[12px] font-semibold ${isActive ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>
+                        {story.title}
+                      </div>
+                      <div className="text-[10px] text-[var(--text-muted)]">
+                        {story.status === "approved" ? "✓ Approved" : "Draft"}
+                      </div>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </>
+        )}
       </div>
 
       {/* Bottom - User + Settings */}

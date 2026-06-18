@@ -5,21 +5,33 @@ import { Sidebar } from "./Sidebar";
 import { ChatArea } from "./ChatArea";
 import { ScheduledBoard } from "./ScheduledBoard";
 import { BillingView } from "./BillingView";
-import { Menu, X } from "lucide-react";
-import type { Workspace } from "@/types";
+import { StoryCanvas } from "./StoryCanvas";
+import { Menu } from "lucide-react";
+import type { Workspace, Story } from "@/types";
 
 export function DashboardLayout() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<"chat" | "scheduled" | "billing">("chat");
+  const [currentView, setCurrentView] = useState<"chat" | "scheduled" | "billing" | "story">("chat");
   const [billingInfo, setBillingInfo] = useState<{ paidCredits: number; availableFree: number; totalAvailable: number; isPro: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [activeStoryId, setActiveStoryId] = useState<string | null>(null);
+  const [activeStory, setActiveStory] = useState<Story | null>(null);
 
   useEffect(() => {
     fetchWorkspaces();
     fetchBilling();
   }, []);
+
+  // Fetch story when activeStoryId changes
+  useEffect(() => {
+    if (!activeStoryId) return;
+    fetch(`/api/stories/${activeStoryId}`)
+      .then((r) => r.json())
+      .then((data) => setActiveStory(data))
+      .catch(() => {});
+  }, [activeStoryId]);
 
   const fetchWorkspaces = async () => {
     try {
@@ -51,6 +63,11 @@ export function DashboardLayout() {
 
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) || null;
 
+  // Find the workspace for the active story
+  const storyWorkspace = activeStory
+    ? workspaces.find((w) => w.id === activeStory.workspaceId) || activeWorkspace
+    : null;
+
   return (
     <div className="flex h-screen bg-[var(--surface-0)] overflow-hidden relative">
       {/* Mobile Sidebar Overlay */}
@@ -64,13 +81,21 @@ export function DashboardLayout() {
       <Sidebar
         workspaces={workspaces}
         activeWorkspaceId={activeWorkspaceId}
-        onSelectWorkspace={setActiveWorkspaceId}
+        onSelectWorkspace={(id) => {
+          setActiveWorkspaceId(id);
+        }}
         onWorkspacesChange={fetchWorkspaces}
         currentView={currentView}
         onSelectView={(view) => {
           setCurrentView(view);
           setIsMobileOpen(false);
         }}
+        onSelectStory={(id) => {
+          setActiveStoryId(id);
+          setCurrentView("story");
+          setIsMobileOpen(false);
+        }}
+        activeStoryId={activeStoryId}
         isPro={billingInfo?.isPro || false}
         isMobileOpen={isMobileOpen}
         onCloseMobile={() => setIsMobileOpen(false)}
@@ -86,27 +111,38 @@ export function DashboardLayout() {
             <Menu size={20} />
           </button>
           <div className="font-['Outfit'] font-bold text-[16px]">
-            {currentView === "chat" ? activeWorkspace?.name || "Alter" : currentView === "scheduled" ? "Scheduled Posts" : "Billing"}
+            {currentView === "chat"
+              ? activeWorkspace?.name || "Alter"
+              : currentView === "scheduled"
+              ? "Scheduled Posts"
+              : currentView === "story"
+              ? activeStory?.title || "Campaign"
+              : "Billing"}
           </div>
-          <div className="w-9" /> {/* Spacer for centering */}
+          <div className="w-9" />
         </div>
+
         {loading ? (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <div className="spinner" style={{ width: 32, height: 32 }} />
           </div>
         ) : currentView === "billing" ? (
           <BillingView onSuccess={() => { fetchBilling(); setCurrentView("chat"); }} />
         ) : currentView === "scheduled" ? (
           <ScheduledBoard />
+        ) : currentView === "story" && activeStory && storyWorkspace ? (
+          <StoryCanvas
+            story={activeStory}
+            workspace={storyWorkspace}
+            readOnly
+          />
         ) : activeWorkspace ? (
-          <ChatArea workspace={activeWorkspace} billingInfo={billingInfo} onBillingUpdate={fetchBilling} onUpgrade={() => setCurrentView("billing")} />
+          <ChatArea
+            workspace={activeWorkspace}
+            billingInfo={billingInfo}
+            onBillingUpdate={fetchBilling}
+            onUpgrade={() => setCurrentView("billing")}
+          />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-[var(--text-muted)] p-6 text-center">
             <div className="text-[48px]">👈</div>

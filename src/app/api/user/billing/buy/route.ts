@@ -36,8 +36,13 @@ export async function POST(req: NextRequest) {
       name: `marketGO - ${amount} Posts Top-Up`,
       description: `Prepaid pack of ${amount} AI generation posts.`,
       tax_category: "saas",
-      price: priceCents,
-      currency: "USD",
+      price: {
+        type: "one_time_price",
+        price: priceCents,
+        currency: "USD",
+        discount: 0,
+        purchasing_power_parity: false,
+      },
     });
 
     // Create a dynamic checkout session

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { CheckCircle, Clock, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import toast from "react-hot-toast";
 import type { Story, StoryNode, SocialPlatform, Workspace } from "@/types";
 import { PostCard } from "./PostCard";
 
@@ -42,6 +41,8 @@ const PLATFORM_INFO: Record<
 
 // ── Skeleton Loader (shown while AI generates) ─────────────────────────────
 export function StoryCanvasSkeleton() {
+  const dummyPlatforms: SocialPlatform[] = ["linkedin", "telegram"];
+  
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10 gap-10">
       <div className="flex items-center gap-2 text-[var(--text-secondary)]">
@@ -51,65 +52,40 @@ export function StoryCanvasSkeleton() {
         </span>
       </div>
 
-      {/* Skeleton nodes row */}
-      <div className="w-full max-w-[900px] overflow-x-auto">
-        <div className="flex items-start gap-0 min-w-max mx-auto">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex items-start">
-              {/* Node skeleton */}
-              <div
-                className="w-[180px] rounded-[14px] overflow-hidden"
-                style={{
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border)",
-                  animation: `pulse 1.5s ease-in-out ${i * 0.15}s infinite`,
-                }}
-              >
-                <div
-                  className="h-8 w-full"
-                  style={{ background: "var(--surface-3)" }}
-                />
-                <div className="p-3 flex flex-col gap-2">
-                  <div
-                    className="h-3 rounded-full w-3/4"
-                    style={{ background: "var(--surface-3)" }}
-                  />
-                  <div
-                    className="h-2.5 rounded-full w-1/2"
-                    style={{ background: "var(--surface-3)" }}
-                  />
-                  <div
-                    className="h-2 rounded-full w-full mt-1"
-                    style={{ background: "var(--surface-3)" }}
-                  />
-                  <div
-                    className="h-2 rounded-full w-5/6"
-                    style={{ background: "var(--surface-3)" }}
-                  />
+      <div className="w-full max-w-[960px] overflow-x-auto pb-4">
+        <div className="flex flex-col gap-8 min-w-max mx-auto">
+          {/* Header Row */}
+          <div className="flex gap-4 pl-[72px]">
+            {dummyPlatforms.map((p) => {
+              const platform = PLATFORM_INFO[p];
+              return (
+                <div key={p} className="w-[260px] text-center font-bold text-[13px] uppercase tracking-wider" style={{ color: platform.color }}>
+                  <div className="flex items-center justify-center gap-1.5 opacity-80">
+                    {platform.icon} {platform.label}
+                  </div>
                 </div>
+              );
+            })}
+          </div>
+
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex gap-4 items-center relative">
+              <div className="w-14 h-14 shrink-0 rounded-full bg-[var(--surface-2)] border-2 border-[var(--border)] flex items-center justify-center font-bold text-[20px] text-[var(--text-muted)] z-10 animate-pulse shadow-sm">
+                {i}
               </div>
-              {/* Arrow between nodes */}
-              {i < 4 && (
-                <div className="flex items-center self-center mx-1">
-                  <div
-                    className="w-6 h-px"
-                    style={{ background: "var(--border)" }}
-                  />
-                  <svg width="8" height="10" viewBox="0 0 8 10" fill="var(--border)">
-                    <path d="M0 0 L8 5 L0 10 Z" />
-                  </svg>
+              {dummyPlatforms.map((p, colIdx) => (
+                <div key={p} className="w-[260px] flex justify-center relative">
+                  {colIdx === (i % 2) ? (
+                    <div className="w-[240px] h-[160px] rounded-[14px] bg-[var(--surface-2)] border border-[var(--border)] animate-pulse shadow-sm" />
+                  ) : (
+                    <div className="absolute top-1/2 left-0 right-0 h-px bg-[var(--border)] opacity-30 -z-10" />
+                  )}
                 </div>
-              )}
+              ))}
             </div>
           ))}
         </div>
       </div>
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-      `}</style>
     </div>
   );
 }
@@ -144,6 +120,11 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
       setApproving(false);
     }
   };
+
+  // Derive columns from the story's selected platforms or infer from nodes
+  const platforms: SocialPlatform[] = story.platforms?.length 
+    ? story.platforms 
+    : Array.from(new Set(nodes.map(n => n.platform)));
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -191,131 +172,123 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
         </div>
       </div>
 
-      {/* Canvas area */}
-      <div className="flex-1 overflow-auto p-6 sm:p-10 flex flex-col items-center justify-start gap-8">
-        {/* Top row: campaign timeline */}
+      {/* Canvas area (Grid Layout) */}
+      <div className="flex-1 overflow-auto p-6 sm:p-10 flex flex-col items-center justify-start gap-8 relative">
         <div className="w-full max-w-[960px] overflow-x-auto pb-4">
-          <div className="flex items-start gap-0 min-w-max mx-auto">
+          <div className="flex flex-col gap-8 min-w-max mx-auto">
+            {/* Column Headers */}
+            <div className="flex gap-4 pl-[72px]">
+              {platforms.map((p) => {
+                const platform = PLATFORM_INFO[p] || PLATFORM_INFO.linkedin;
+                return (
+                  <div key={p} className="w-[260px] text-center font-bold text-[13px] uppercase tracking-wider" style={{ color: platform.color }}>
+                    <div className="flex items-center justify-center gap-1.5 opacity-80">
+                      {platform.icon} {platform.label}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Grid Rows (Sequential Steps) */}
             {nodes.map((node, idx) => {
-              const platform = PLATFORM_INFO[node.platform] || PLATFORM_INFO.linkedin;
               const date = new Date(node.scheduledAt);
-
               return (
-                <div key={node.id} className="flex items-center">
-                  {/* Node Card */}
-                  <button
-                    onClick={() => setOpenNode(node)}
-                    className="w-[190px] sm:w-[210px] rounded-[14px] overflow-hidden text-left transition-all duration-200 group"
-                    style={{
-                      border: `1.5px solid ${platform.color}40`,
-                      background: "var(--surface-2)",
-                      boxShadow: `0 4px 20px ${platform.color}15`,
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)";
-                      (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 28px ${platform.color}30`;
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                      (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px ${platform.color}15`;
-                    }}
-                  >
-                    {/* Platform header */}
-                    <div
-                      className="px-3 py-2 flex items-center justify-between"
-                      style={{
-                        background: `${platform.color}15`,
-                        borderBottom: `1px solid ${platform.color}25`,
-                      }}
-                    >
-                      <div
-                        className="flex items-center gap-1.5 text-[11px] font-bold"
-                        style={{ color: platform.color }}
-                      >
-                        {platform.icon}
-                        {platform.label}
-                      </div>
-                      <span
-                        className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                        style={{
-                          background: `${platform.color}20`,
-                          color: platform.color,
-                        }}
-                      >
-                        Day {node.day}
-                      </span>
-                    </div>
+                <div key={node.id} className="flex gap-4 items-center relative">
+                  {/* Step Number Column */}
+                  <div className="w-14 h-14 shrink-0 rounded-full bg-[var(--surface-2)] border-2 border-[var(--border)] flex items-center justify-center font-['Outfit'] font-bold text-[20px] text-[var(--text-primary)] shadow-sm z-10 relative">
+                    {idx + 1}
+                    {/* Vertical connecting line to the next number (except the last one) */}
+                    {idx < nodes.length - 1 && (
+                      <div className="absolute top-[54px] left-[25px] w-0.5 h-10 bg-[var(--border)] opacity-60" />
+                    )}
+                  </div>
+                  
+                  {/* Platform Columns */}
+                  {platforms.map((p) => {
+                    const platform = PLATFORM_INFO[p] || PLATFORM_INFO.linkedin;
+                    const isTargetPlatform = node.platform === p;
 
-                    {/* Node content */}
-                    <div className="p-3">
-                      <div className="text-[13px] font-bold text-[var(--text-primary)] mb-1.5">
-                        {node.label}
-                      </div>
-                      <div className="text-[11px] text-[var(--text-muted)] flex items-center gap-1 mb-2">
-                        <Clock size={10} />
-                        {format(date, "MMM d, h:mm a")}
-                      </div>
-                      <div className="text-[11px] text-[var(--text-secondary)] leading-relaxed line-clamp-3 opacity-70 group-hover:opacity-100 transition-opacity">
-                        {node.content}
-                      </div>
-                    </div>
+                    return (
+                      <div key={p} className="w-[260px] flex justify-center relative">
+                        {isTargetPlatform ? (
+                          <button
+                            onClick={() => setOpenNode(node)}
+                            className="w-[240px] rounded-[14px] overflow-hidden text-left transition-all duration-200 group relative z-10"
+                            style={{
+                              border: `1.5px solid ${platform.color}40`,
+                              background: "var(--surface-2)",
+                              boxShadow: `0 4px 20px ${platform.color}15`,
+                            }}
+                            onMouseEnter={(e) => {
+                              (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)";
+                              (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 28px ${platform.color}30`;
+                            }}
+                            onMouseLeave={(e) => {
+                              (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                              (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px ${platform.color}15`;
+                            }}
+                          >
+                            <div
+                              className="px-3 py-2 flex items-center justify-between"
+                              style={{
+                                background: `${platform.color}15`,
+                                borderBottom: `1px solid ${platform.color}25`,
+                              }}
+                            >
+                              <div
+                                className="flex items-center gap-1.5 text-[11px] font-bold"
+                                style={{ color: platform.color }}
+                              >
+                                {platform.icon}
+                                {platform.label}
+                              </div>
+                              <span
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                                style={{
+                                  background: `${platform.color}20`,
+                                  color: platform.color,
+                                }}
+                              >
+                                Day {node.day}
+                              </span>
+                            </div>
 
-                    {/* Open hint */}
-                    <div
-                      className="px-3 py-2 text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ color: platform.color }}
-                    >
-                      Click to view & edit →
-                    </div>
-                  </button>
+                            <div className="p-3">
+                              <div className="text-[14px] font-bold text-[var(--text-primary)] mb-1.5">
+                                {node.label}
+                              </div>
+                              <div className="text-[11px] text-[var(--text-muted)] flex items-center gap-1 mb-2">
+                                <Clock size={10} />
+                                {format(date, "MMM d, h:mm a")}
+                              </div>
+                              <div className="text-[12px] text-[var(--text-secondary)] leading-relaxed line-clamp-3 opacity-70 group-hover:opacity-100 transition-opacity">
+                                {node.content}
+                              </div>
+                            </div>
 
-                  {/* Arrow connector */}
-                  {idx < nodes.length - 1 && (
-                    <div className="flex items-center self-center mx-0.5 shrink-0">
-                      <div
-                        className="w-5 h-px"
-                        style={{ background: "var(--border)" }}
-                      />
-                      <svg
-                        width="7"
-                        height="9"
-                        viewBox="0 0 8 10"
-                        fill="var(--text-muted)"
-                        style={{ opacity: 0.5 }}
-                      >
-                        <path d="M0 0 L8 5 L0 10 Z" />
-                      </svg>
-                    </div>
-                  )}
+                            <div
+                              className="px-3 py-2 text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
+                              style={{ color: platform.color }}
+                            >
+                              Click to view & edit →
+                            </div>
+                          </button>
+                        ) : (
+                          // Horizontal Connector Line if this isn't the active card
+                          <div className="absolute top-1/2 left-0 right-0 h-px bg-[var(--border)] opacity-40 -z-10" />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
           </div>
         </div>
-
-        {/* Summary row */}
-        <div className="w-full max-w-[960px] flex flex-wrap gap-3 justify-center">
-          {nodes.map((node) => {
-            const platform = PLATFORM_INFO[node.platform] || PLATFORM_INFO.linkedin;
-            return (
-              <div
-                key={node.id}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-                style={{
-                  background: `${platform.color}10`,
-                  border: `1px solid ${platform.color}30`,
-                  color: platform.color,
-                }}
-              >
-                {platform.icon}
-                Day {node.day} — {node.label}
-              </div>
-            );
-          })}
-        </div>
       </div>
 
-      {/* Post modal (click a node) */}
+      {/* Post modal */}
       {openNode && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[1000] p-4"

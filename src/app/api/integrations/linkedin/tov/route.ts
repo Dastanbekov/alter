@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
-
+const openai = new OpenAI({
+  baseURL: "https://api.deepseek.com/v1",
+  apiKey: process.env.DEEPSEEK_API_KEY || "dummy",
+});
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
@@ -105,9 +107,11 @@ ${texts.map((t, i) => `--- Post ${i + 1} ---\n${t}\n`).join("\n")}
 
 Return ONLY the Tone of Voice instructions, written as a direct prompt to an AI (e.g., "Write with a casual tone, use short sentences...").`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const result = await model.generateContent(prompt);
-    const toneOfVoice = result.response.text().trim();
+    const response = await openai.chat.completions.create({
+      model: "deepseek-chat",
+      messages: [{ role: "user", content: prompt }],
+    });
+    const toneOfVoice = response.choices[0]?.message?.content?.trim() || "";
 
     // Save
     await prisma.integration.update({

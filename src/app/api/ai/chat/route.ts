@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
+const openai = new OpenAI({
+  baseURL: "https://api.deepseek.com/v1",
+  apiKey: process.env.DEEPSEEK_API_KEY || "dummy",
+});
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -16,9 +19,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Messages array required" }, { status: 400 });
     }
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-3.1-flash-lite",
-      systemInstruction: `You are an AI assistant helping a user create social media posts for a workspace named "${workspaceName}" (Purpose: ${workspacePurpose}). 
+    const systemInstruction = `You are an AI assistant helping a user create social media posts for a workspace named "${workspaceName}" (Purpose: ${workspacePurpose}). 
 Your goal is strictly to gather the minimum necessary information to generate social media posts. Do NOT engage in idle chat.
 When the user shares news or an event, evaluate what basic info is missing (e.g. project name, target audience).
 If information is missing, you MUST output a questionnaire for the user to fill out. 
@@ -30,19 +31,22 @@ CRITICAL RULE 2: Once the user provides answers to your questionnaire, you MUST 
 CRITICAL RULE 3: If you have received the answers to your questionnaire, or if the initial prompt already contains enough information to make a post, you MUST immediately output EXACTLY the following text and nothing else:
 [REQUEST_GENERATE_POSTS]
 
-Remember: your only job is to guide the user to fill out ONE questionnaire and then immediately output [REQUEST_GENERATE_POSTS].`
+Remember: your only job is to guide the user to fill out ONE questionnaire and then immediately output [REQUEST_GENERATE_POSTS].`;
+
+    const openAiMessages = [
+      { role: "system", content: systemInstruction },
+      ...messages.map((m: any) => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: m.content,
+      })),
+    ];
+
+    const response = await openai.chat.completions.create({
+      model: "deepseek-chat",
+      messages: openAiMessages as any,
     });
 
-    const history = messages.slice(0, -1).map((m: any) => ({
-      role: m.role === "user" ? "user" : "model",
-      parts: [{ text: m.content }],
-    }));
-
-    const chat = model.startChat({ history });
-
-    const lastMessage = messages[messages.length - 1].content;
-    const result = await chat.sendMessage(lastMessage);
-    const text = result.response.text();
+    const text = response.choices[0]?.message?.content?.trim() || "";
 
     return NextResponse.json({ text });
   } catch (error) {

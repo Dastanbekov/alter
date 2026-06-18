@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
+const openai = new OpenAI({
+  baseURL: "https://api.deepseek.com/v1",
+  apiKey: process.env.DEEPSEEK_API_KEY || "dummy",
+});
 
 const PLATFORM_BEST_TIMES: Record<string, string> = {
   linkedin: "Optimal LinkedIn times: Tuesday–Thursday 9–11 AM local time",
@@ -40,8 +43,6 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
-
     // ─── PHASE A: Generate clarifying questions ────────────────────────────────
     if (!answers) {
       const questionPrompt = `You are a strategic social media campaign planner.
@@ -64,8 +65,12 @@ Return ONLY valid JSON in this exact format, no extra text:
   ]
 }`;
 
-      const result = await model.generateContent(questionPrompt);
-      let raw = result.response.text().trim();
+      const response = await openai.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: questionPrompt }],
+        response_format: { type: "json_object" },
+      });
+      let raw = response.choices[0]?.message?.content?.trim() || "{}";
 
       // Strip markdown code fences if present
       raw = raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
@@ -139,12 +144,18 @@ Return ONLY valid JSON in this exact format:
   ]
 }`;
 
-    const planResult = await model.generateContent(planPrompt);
-    let rawPlan = planResult.response.text().trim();
-    rawPlan = rawPlan.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+      const response = await openai.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: planPrompt }],
+        response_format: { type: "json_object" },
+      });
+      let raw = response.choices[0]?.message?.content?.trim() || "{}";
 
-    try {
-      const parsed = JSON.parse(rawPlan);
+      // Strip markdown code fences if present
+      raw = raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+
+      try {
+        const parsed = JSON.parse(raw);
 
       // Deduct credits (1 per node)
       const nodeCount = parsed.nodes?.length || 0;
@@ -189,7 +200,7 @@ Return ONLY valid JSON in this exact format:
 
       return NextResponse.json({ phase: "plan", data: parsed });
     } catch {
-      console.error("Failed to parse plan:", rawPlan);
+      console.error("Failed to parse plan:", raw);
       return NextResponse.json(
         { error: "Failed to parse AI campaign plan" },
         { status: 500 }

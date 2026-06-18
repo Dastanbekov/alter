@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generatePostsForPlatforms, refinePost } from "@/lib/gemini";
+import { generatePostsForPlatforms, refinePost } from "@/lib/ai";
 import type { SocialPlatform } from "@/types";
 
 // POST /api/ai/generate - generate posts for connected platforms

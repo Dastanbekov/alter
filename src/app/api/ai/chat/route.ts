@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.1-flash-lite",
+      model: "gemini-2.5-flash",
       systemInstruction: `You are an AI assistant helping a user create social media posts for a workspace named "${workspaceName}" (Purpose: ${workspacePurpose}). 
 Your goal is strictly to gather the minimum necessary information to generate social media posts. Do NOT engage in idle chat.
 When the user shares news or an event, evaluate what basic info is missing (e.g. project name, target audience).

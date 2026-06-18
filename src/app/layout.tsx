@@ -1,3 +1,4 @@
+// build: 2026-06-18
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";

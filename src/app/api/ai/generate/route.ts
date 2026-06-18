@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     // Check which platforms are actually integrated (have tokens)
     const integrations = await prisma.integration.findMany({
       where: { workspaceId },
-      select: { platform: true },
+      select: { platform: true, toneOfVoice: true },
     });
 
     const connectedPlatforms = integrations.map((i) => i.platform);

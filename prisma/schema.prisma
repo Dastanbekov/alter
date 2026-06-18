@@ -124,6 +124,7 @@ model Integration {
   refreshToken String?
   tokenSecret  String?
   metadata     String?
+  toneOfVoice  String?   @db.Text
   expiresAt    DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

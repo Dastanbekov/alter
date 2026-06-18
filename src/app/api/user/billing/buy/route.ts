@@ -3,8 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { DodoPayments } from "dodopayments";
 
+const apiKey = process.env.DODO_PAYMENTS_API_KEY || "";
 const dodo = new DodoPayments({
-  bearerToken: process.env.DODO_PAYMENTS_API_KEY || "",
+  bearerToken: apiKey,
+  environment: apiKey.startsWith("test_") ? "test_mode" : "live_mode",
 });
 
 export async function POST(req: NextRequest) {

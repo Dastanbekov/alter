@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { DodoPayments } from "dodopayments";
 
+const apiKey = process.env.DODO_PAYMENTS_API_KEY || "";
 const dodo = new DodoPayments({
-  bearerToken: process.env.DODO_PAYMENTS_API_KEY || "",
+  bearerToken: apiKey,
+  environment: apiKey.startsWith("test_") ? "test_mode" : "live_mode",
   webhookKey: process.env.DODO_PAYMENTS_WEBHOOK_SECRET || "",
 });
 

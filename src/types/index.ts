@@ -41,6 +41,7 @@ export interface Integration {
   userId: string;
   platform: SocialPlatform;
   metadata: Record<string, string> | null;
+  toneOfVoice?: string | null;
   expiresAt: Date | null;
   createdAt: Date;
   updatedAt: Date;

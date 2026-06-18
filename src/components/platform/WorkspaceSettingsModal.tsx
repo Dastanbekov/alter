@@ -9,6 +9,7 @@ interface Integration {
   id: string;
   platform: string;
   metadata: { channelUsername?: string; botUsername?: string; screenName?: string; name?: string } | null;
+  toneOfVoice?: string | null;
   createdAt: string;
 }
 

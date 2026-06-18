@@ -209,7 +209,7 @@ export function StoryModePanel({ workspace, onBillingUpdate }: Props) {
             Start a Content Campaign
           </h2>
           <p className="text-[14px] text-[var(--text-secondary)] mb-8 leading-relaxed">
-            Describe what you're launching, announcing, or telling the world. AI will craft a full
+            Describe what you&apos;re launching, announcing, or telling the world. AI will craft a full
             multi-post campaign with optimal timing.
           </p>
 

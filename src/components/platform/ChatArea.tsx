@@ -76,6 +76,7 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedPlatforms(workspace.socials.map((s) => s.platform as SocialPlatform));
   }, [workspace]);
 

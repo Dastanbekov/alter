@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "./Sidebar";
 import { ChatArea } from "./ChatArea";
 import { ScheduledBoard } from "./ScheduledBoard";
@@ -19,11 +19,6 @@ export function DashboardLayout() {
   const [activeStoryId, setActiveStoryId] = useState<string | null>(null);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
 
-  useEffect(() => {
-    fetchWorkspaces();
-    fetchBilling();
-  }, []);
-
   // Fetch story when activeStoryId changes
   useEffect(() => {
     if (!activeStoryId) return;
@@ -33,7 +28,7 @@ export function DashboardLayout() {
       .catch(() => {});
   }, [activeStoryId]);
 
-  const fetchWorkspaces = async () => {
+  const fetchWorkspaces = useCallback(async () => {
     try {
       const res = await fetch("/api/workspaces");
       if (res.ok) {
@@ -48,9 +43,9 @@ export function DashboardLayout() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeWorkspaceId]);
 
-  const fetchBilling = async () => {
+  const fetchBilling = useCallback(async () => {
     try {
       const res = await fetch("/api/user/billing");
       if (res.ok) {
@@ -59,7 +54,12 @@ export function DashboardLayout() {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchWorkspaces();
+    fetchBilling();
+  }, [fetchWorkspaces, fetchBilling]);
 
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) || null;
 

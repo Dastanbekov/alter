@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { Polar } from "@polar-sh/sdk";
+import { DodoPayments } from "dodopayments";
 
-const polar = new Polar({
-  accessToken: process.env.POLAR_ACCESS_TOKEN || "",
+const dodo = new DodoPayments({
+  bearerToken: process.env.DODO_PAYMENTS_API_KEY || "",
 });
 
 export async function POST(req: NextRequest) {
@@ -31,18 +31,26 @@ export async function POST(req: NextRequest) {
     const priceUsd = getPrice(amount);
     const priceCents = Math.round(priceUsd * 100);
 
+    // Create a product on the fly for this specific amount
+    const product = await dodo.products.create({
+      name: `marketGO - ${amount} Posts Top-Up`,
+      description: `Prepaid pack of ${amount} AI generation posts.`,
+      tax_category: "saas",
+      price: priceCents,
+      currency: "USD",
+    });
+
     // Create a dynamic checkout session
-    const checkout = await polar.checkouts.create({
-      products: [process.env.POLAR_PRODUCT_ID || ""],
-      successUrl: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/dashboard?checkout=success`,
-      amount: priceCents, // Set exact price in cents
+    const checkout = await dodo.checkoutSessions.create({
+      product_cart: [{ product_id: product.product_id, quantity: 1 }],
+      return_url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/dashboard?checkout=success`,
       metadata: {
         userId: session.user.id,
         postsAmount: amount.toString(), // Store how many posts to credit
       },
     });
 
-    return NextResponse.json({ success: true, url: checkout.url });
+    return NextResponse.json({ success: true, url: checkout.checkout_url });
   } catch (error) {
     console.error("[BILLING_BUY]", error);
     return NextResponse.json({ error: "Checkout creation failed" }, { status: 500 });

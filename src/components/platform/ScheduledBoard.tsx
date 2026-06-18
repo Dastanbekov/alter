@@ -46,10 +46,6 @@ export function ScheduledBoard() {
   const [workspaces, setWorkspaces] = useState<WorkspaceWithPosts[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchScheduledPosts();
-  }, []);
-
   const fetchScheduledPosts = async () => {
     try {
       const res = await fetch("/api/posts/scheduled");
@@ -64,6 +60,10 @@ export function ScheduledBoard() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchScheduledPosts();
+  }, []);
 
   const handleCancel = async (postId: string) => {
     if (!confirm("Are you sure you want to cancel this scheduled post?")) return;

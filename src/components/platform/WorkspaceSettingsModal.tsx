@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { X as XIcon, Check, ExternalLink, Lock, AlertCircle, Trash2, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Workspace } from "@/types";
@@ -31,6 +31,7 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateNam
 
   useEffect(() => {
     if (isOpen && workspace.name) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditName(workspace.name);
     }
   }, [isOpen, workspace.name]);
@@ -40,13 +41,7 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateNam
   const [tgChannel, setTgChannel] = useState("");
   const [tgSaving, setTgSaving] = useState(false);
 
-  useEffect(() => {
-    if (isOpen && workspace.id) {
-      fetchIntegrations();
-    }
-  }, [isOpen, workspace.id]);
-
-  const fetchIntegrations = async () => {
+  const fetchIntegrations = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(`/api/integrations?workspaceId=${workspace.id}`);
@@ -57,7 +52,13 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateNam
     } finally {
       setLoading(false);
     }
-  };
+  }, [workspace.id]);
+
+  useEffect(() => {
+    if (isOpen && workspace.id) {
+      fetchIntegrations();
+    }
+  }, [isOpen, workspace.id, fetchIntegrations]);
 
   const getIntegration = (platform: string) =>
     integrations.find((i) => i.platform === platform);

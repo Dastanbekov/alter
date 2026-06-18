@@ -618,12 +618,15 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
 
         <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-[16px] px-4 py-3 flex gap-3 items-end transition-colors duration-200 focus-within:border-[rgba(67,56,255,0.5)] shadow-sm">
           {(() => {
+            const isStoryMode = chatMode === "story";
             const isSessionLocked = messages.some(m => m.postGroup);
             const hasPendingQuestionnaire = messages.some(m => m.questionnaire && !m.isFormSubmitted);
-            const isInputDisabled = isSessionLocked || hasPendingQuestionnaire;
+            const isInputDisabled = isSessionLocked || hasPendingQuestionnaire || isStoryMode;
 
             let placeholder = "What's happening? Tell me and I'll create posts for you...";
-            if (isSessionLocked) {
+            if (isStoryMode) {
+              placeholder = "Switch to Post mode to write standard posts.";
+            } else if (isSessionLocked) {
               placeholder = "Session complete. Click 'New Post' to start a new thread.";
             } else if (hasPendingQuestionnaire) {
               placeholder = "Please fill out the form above to continue.";
@@ -651,12 +654,13 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
           <button
             id="chat-send"
             onClick={handleSend}
-            disabled={!input.trim() || generating || messages.some(m => m.postGroup) || messages.some(m => m.questionnaire && !m.isFormSubmitted)}
+            disabled={!input.trim() || generating || messages.some(m => m.postGroup) || messages.some(m => m.questionnaire && !m.isFormSubmitted) || chatMode === "story"}
             className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-200 disabled:bg-[var(--surface-4)] disabled:cursor-not-allowed disabled:shadow-none disabled:text-[var(--text-muted)] bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-white cursor-pointer shadow-[0_4px_12px_rgba(26,115,82,0.3)] hover:shadow-[0_4px_16px_rgba(26,115,82,0.4)] hover:-translate-y-[1px]"
           >
             <ArrowUp size={18} strokeWidth={2.5} />
           </button>
         </div>
+
         <div className="text-[11px] text-[var(--text-muted)] text-center mt-2.5 hidden sm:block">
           Press <kbd className="bg-[var(--surface-3)] px-1.5 py-0.5 rounded-[4px] border border-[var(--border)] font-sans mx-0.5 shadow-sm text-[10px]">Enter</kbd> to send · <kbd className="bg-[var(--surface-3)] px-1.5 py-0.5 rounded-[4px] border border-[var(--border)] font-sans mx-0.5 shadow-sm text-[10px]">Shift+Enter</kbd> for new line
         </div>

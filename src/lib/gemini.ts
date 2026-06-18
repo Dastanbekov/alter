@@ -30,14 +30,12 @@ const PLATFORM_INSTRUCTIONS: Record<string, string> = {
 - No corporate speak
 - Can use emojis sparingly`,
   
-  linkedin: `Write a LinkedIn post. Rules:
-- Professional but human tone
-- 150-300 words ideal
-- Start with a hook (first line should grab attention)
-- Add value: insight, lesson, or story
-- End with a question or call to action
-- Use line breaks for readability
-- 3-5 relevant hashtags at the end`,
+  linkedin: `Write a LinkedIn post. STRICT RULES:
+- ZERO hashtags. Do NOT use any hashtags.
+- The first 150 characters are the hook (before the "See more" button) — they MUST be extremely engaging or the post will fail.
+- The post must be completely self-sufficient and valuable on its own, without relying on external links.
+- Professional but human tone. Add value: insight, lesson, or story.
+- Use line breaks for readability. 150-300 words.`,
   
   telegram: `Write a Telegram channel post. Rules:
 - Conversational and direct

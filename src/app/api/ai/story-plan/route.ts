@@ -95,21 +95,22 @@ ${JSON.stringify(answers, null, 2)}
 
 ${platformHints}
 
-Create a content campaign with 3-5 posts. Each post should tell one part of a narrative arc:
-- Post 1: Hook / The Problem / The Context
-- Post 2: The Journey / Insight / Challenge
-- Post 3: The Turning Point / Solution  
-- Post 4 (optional): The Result / Lesson
-- Post 5 (optional): The Call to Action / Next Step
+Create a content campaign with 3-5 steps (days). Each step should tell one part of a narrative arc:
+- Step 1: Hook / The Problem / The Context
+- Step 2: The Journey / Insight / Challenge
+- Step 3: The Turning Point / Solution  
+- Step 4 (optional): The Result / Lesson
+- Step 5 (optional): The Call to Action / Next Step
 
 Rules:
-1. Spread posts over the campaign timeline the user mentioned.
+1. Spread the steps over the campaign timeline the user mentioned.
 2. Assign realistic posting datetimes based on the user's timezone/region and platform best practices.
-3. Alternate platforms if multiple are selected (one post per platform).
-4. Write FULL post content for each node (ready to publish — don't use placeholders).
-5. For X/Twitter: max 280 chars, punchy, 1-3 hashtags.
-6. For LinkedIn: 150-300 words, professional hook, line breaks, 3-5 hashtags.
-7. For Telegram: conversational, bold markdown, no hashtags.
+3. IMPORTANT: For EACH step (Day 1, Day 2, etc.), you MUST generate a separate post node for EVERY selected platform. If the user selected 2 platforms and the campaign has 3 steps, you must return exactly 6 nodes.
+4. Adapt the content of each post to fit its specific platform while keeping the same core message for that day.
+5. Write FULL post content for each node (ready to publish — don't use placeholders).
+6. For X/Twitter: max 280 chars, punchy, 1-3 hashtags.
+7. For LinkedIn: 150-300 words, professional hook, line breaks, 3-5 hashtags.
+8. For Telegram: conversational, bold markdown, no hashtags.
 
 Return ONLY valid JSON in this exact format:
 {

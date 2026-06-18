@@ -85,6 +85,17 @@ Return ONLY valid JSON in this exact format, no extra text:
     const selectedPlatforms: string[] = platforms || ["linkedin"];
     const platformHints = selectedPlatforms.map((p: string) => PLATFORM_BEST_TIMES[p] || "").join("\n");
 
+    const integrations = await prisma.integration.findMany({
+      where: { workspaceId, platform: { in: selectedPlatforms } },
+    });
+
+    let tovRules = "";
+    integrations.forEach(i => {
+      if (i.toneOfVoice) {
+        tovRules += `\nCRITICAL - Tone of Voice for ${i.platform}:\n${i.toneOfVoice}\nYou MUST write posts for ${i.platform} exactly matching this tone of voice and style.\n`;
+      }
+    });
+
     const planPrompt = `You are an expert social media campaign strategist.
 
 Campaign brief: "${brief}"
@@ -94,6 +105,7 @@ User answers to clarifying questions:
 ${JSON.stringify(answers, null, 2)}
 
 ${platformHints}
+${tovRules}
 
 Create a content campaign with 3-5 steps (days). Each step should tell one part of a narrative arc:
 - Step 1: Hook / The Problem / The Context
@@ -109,7 +121,7 @@ Rules:
 4. Adapt the content of each post to fit its specific platform while keeping the same core message for that day.
 5. Write FULL post content for each node (ready to publish — don't use placeholders).
 6. For X/Twitter: max 280 chars, punchy, 1-3 hashtags.
-7. For LinkedIn: 150-300 words, professional hook, line breaks, 3-5 hashtags.
+7. For LinkedIn: ZERO hashtags (do NOT use hashtags). 150-300 words. The first 150 characters are the hook (MUST be extremely engaging). Post must be self-sufficient and valuable.
 8. For Telegram: conversational, bold markdown, no hashtags.
 
 Return ONLY valid JSON in this exact format:

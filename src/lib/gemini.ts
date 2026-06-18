@@ -15,6 +15,7 @@ export interface GeneratePostsInput {
   workspacePurpose: string; // "project" | "blog" | "other"
   workspaceDetails: string; // project name or pseudonym
   existingPosts?: string[]; // for context on their style
+  toneOfVoice?: string; // AI generated summary of their style
 }
 
 export interface GeneratedPost {
@@ -59,12 +60,16 @@ export async function generatePostsForPlatforms(
   for (const item of input) {
     const platformInstructions = PLATFORM_INSTRUCTIONS[item.platform];
     
+    const tovInstruction = item.toneOfVoice 
+      ? `\n\nCRITICAL - TONE OF VOICE TO EMULATE:\n${item.toneOfVoice}\nYou MUST write the post exactly matching this tone of voice and style.`
+      : "";
+
     const prompt = `You are a social media content expert writing for ${item.workspacePurpose === "blog" ? `a personal blog by "${item.workspaceDetails}"` : `a project called "${item.workspaceDetails}"`}.
 
 The user wants to post about:
 "${item.context}"
 
-${platformInstructions}
+${platformInstructions}${tovInstruction}
 
 Write ONLY the post content. No explanations, no "Here's your post:", just the raw post text.`;
 

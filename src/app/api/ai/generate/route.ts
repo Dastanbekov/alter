@@ -100,12 +100,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate posts
-    const inputs = activePlatforms.map((platform) => ({
-      platform: platform as SocialPlatform,
-      context: context.trim(),
-      workspacePurpose: workspace.purpose,
-      workspaceDetails: workspace.details || workspace.name,
-    }));
+    const inputs = activePlatforms.map((platform) => {
+      const integration = integrations.find((i) => i.platform === platform);
+      return {
+        platform: platform as SocialPlatform,
+        context: context.trim(),
+        workspacePurpose: workspace.purpose,
+        workspaceDetails: workspace.details || workspace.name,
+        toneOfVoice: integration?.toneOfVoice || undefined,
+      };
+    });
 
     const generated = await generatePostsForPlatforms(inputs);
 

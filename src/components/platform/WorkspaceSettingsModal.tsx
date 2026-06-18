@@ -22,6 +22,7 @@ interface Props {
 export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateName }: Props) {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"integrations" | "tov">("integrations");
 
   // Rename
   const [isEditingName, setIsEditingName] = useState(false);
@@ -151,49 +152,66 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateNam
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-5 md:px-8 md:py-6 border-b border-[var(--border)] flex items-center justify-between">
-          <div className="flex-1 mr-4">
-            <h2 className="font-['Outfit'] text-[22px] font-bold text-[var(--text-primary)] mb-1">
-              Workspace Settings
-            </h2>
-            {isEditingName ? (
-              <div className="flex items-center gap-2 mt-1 max-w-[300px]">
-                <input
-                  autoFocus
-                  className="input text-[14px] px-2 py-1 flex-1 min-w-0"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
-                />
-                <button
-                  onClick={handleSaveName}
-                  disabled={savingName}
-                  className="btn btn-primary btn-sm px-2 py-1 shrink-0"
-                >
-                  {savingName ? "Saving..." : "Save"}
-                </button>
-                <button
-                  onClick={() => setIsEditingName(false)}
-                  className="btn btn-ghost btn-sm px-2 py-1 shrink-0"
-                >
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <p className="text-[14px] text-[var(--text-secondary)] flex items-center gap-2">
-                Manage settings for
-                <span className="text-[var(--text-primary)] font-semibold cursor-pointer hover:underline" onClick={() => setIsEditingName(true)} title="Click to rename">
-                  {workspace.name} <Pencil size={12} className="inline ml-0.5 text-[var(--text-muted)]" />
-                </span>
-              </p>
-            )}
+        <div className="px-6 pt-5 md:px-8 md:pt-6 border-b border-[var(--border)]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1 mr-4">
+              <h2 className="font-['Outfit'] text-[22px] font-bold text-[var(--text-primary)] mb-1">
+                Workspace Settings
+              </h2>
+              {isEditingName ? (
+                <div className="flex items-center gap-2 mt-1 max-w-[300px]">
+                  <input
+                    autoFocus
+                    className="input text-[14px] px-2 py-1 flex-1 min-w-0"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
+                  />
+                  <button
+                    onClick={handleSaveName}
+                    disabled={savingName}
+                    className="btn btn-primary btn-sm px-2 py-1 shrink-0"
+                  >
+                    {savingName ? "Saving..." : "Save"}
+                  </button>
+                  <button
+                    onClick={() => setIsEditingName(false)}
+                    className="btn btn-ghost btn-sm px-2 py-1 shrink-0"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[14px] text-[var(--text-secondary)] flex items-center gap-2">
+                  Manage settings for
+                  <span className="text-[var(--text-primary)] font-semibold cursor-pointer hover:underline" onClick={() => setIsEditingName(true)} title="Click to rename">
+                    {workspace.name} <Pencil size={12} className="inline ml-0.5 text-[var(--text-muted)]" />
+                  </span>
+                </p>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="btn btn-ghost rounded-full p-2"
+            >
+              <XIcon size={20} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="btn btn-ghost rounded-full p-2"
-          >
-            <XIcon size={20} />
-          </button>
+
+          <div className="flex items-center gap-6 mt-2">
+            <button
+              onClick={() => setActiveTab("integrations")}
+              className={`pb-3 text-[14px] font-semibold border-b-2 transition-colors ${activeTab === "integrations" ? "border-[var(--primary)] text-[var(--text-primary)]" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+            >
+              Integrations
+            </button>
+            <button
+              onClick={() => setActiveTab("tov")}
+              className={`pb-3 text-[14px] font-semibold border-b-2 transition-colors ${activeTab === "tov" ? "border-[var(--primary)] text-[var(--text-primary)]" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+            >
+              Tone of Voice
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -202,7 +220,7 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateNam
             <div className="flex justify-center p-10">
               <div className="spinner w-6 h-6" />
             </div>
-          ) : (
+          ) : activeTab === "integrations" ? (
             <div className="flex flex-col gap-4">
               {/* X (Twitter) */}
               <IntegrationCard
@@ -360,45 +378,52 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateNam
                 comingSoon={true}
               />
             </div>
-          )}
+          ) : null}
 
           {/* Danger Zone */}
-          <div className="mt-10">
-            <div className="text-[14px] font-bold text-[#ef4444] mb-4 pb-2 border-b border-[rgba(239,68,68,0.2)]">
-              Danger Zone
-            </div>
-            <div className="card flex items-center justify-between p-4 md:p-5 bg-[rgba(239,68,68,0.05)] border border-[rgba(239,68,68,0.2)]">
-              <div>
-                <div className="text-[15px] font-bold text-[var(--text-primary)]">
-                  Delete Workspace
-                </div>
-                <div className="text-[13px] text-[var(--text-secondary)] mt-0.5 max-w-[300px] md:max-w-none">
-                  Permanently remove this workspace and all its data. This action cannot be undone.
-                </div>
+          {activeTab === "integrations" && (
+            <div className="mt-10">
+              <div className="text-[14px] font-bold text-[#ef4444] mb-4 pb-2 border-b border-[rgba(239,68,68,0.2)]">
+                Danger Zone
               </div>
-              <button
-                onClick={async () => {
-                  if (confirm("Are you ABSOLUTELY sure you want to delete this workspace? All posts and history will be lost forever.")) {
-                    try {
-                      const res = await fetch(`/api/workspaces?id=${workspace.id}`, { method: "DELETE" });
-                      if (res.ok) {
-                        toast.success("Workspace deleted");
-                        window.location.href = "/dashboard";
-                      } else {
-                        toast.error("Failed to delete workspace");
+              <div className="card flex items-center justify-between p-4 md:p-5 bg-[rgba(239,68,68,0.05)] border border-[rgba(239,68,68,0.2)]">
+                <div>
+                  <div className="text-[15px] font-bold text-[var(--text-primary)]">
+                    Delete Workspace
+                  </div>
+                  <div className="text-[13px] text-[var(--text-secondary)] mt-0.5 max-w-[300px] md:max-w-none">
+                    Permanently remove this workspace and all its data. This action cannot be undone.
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (confirm("Are you ABSOLUTELY sure you want to delete this workspace? All posts and history will be lost forever.")) {
+                      try {
+                        const res = await fetch(`/api/workspaces?id=${workspace.id}`, { method: "DELETE" });
+                        if (res.ok) {
+                          toast.success("Workspace deleted");
+                          window.location.href = "/dashboard";
+                        } else {
+                          toast.error("Failed to delete workspace");
+                        }
+                      } catch {
+                        toast.error("An error occurred");
                       }
-                    } catch {
-                      toast.error("An error occurred");
                     }
-                  }
-                }}
-                className="btn btn-danger shrink-0 ml-4"
-              >
-                <Trash2 size={16} />
-                Delete
-              </button>
+                  }}
+                  className="btn btn-danger shrink-0 ml-4"
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+
+          {activeTab === "tov" && (
+            <ToneOfVoiceTab workspaceId={workspace.id} linkedinIntegration={linkedinIntegration} telegramIntegration={telegramIntegration} />
+          )}
+
         </div>
       </div>
     </div>
@@ -491,6 +516,118 @@ function IntegrationCard({
           <Lock size={16} className="text-[var(--text-muted)]" />
         </div>
       )}
+    </div>
+  );
+}
+
+function ToneOfVoiceTab({ workspaceId, linkedinIntegration, telegramIntegration }: { workspaceId: string, linkedinIntegration?: { toneOfVoice?: string | null }, telegramIntegration?: { toneOfVoice?: string | null } }) {
+  const [generatingFor, setGeneratingFor] = useState<string | null>(null);
+  const [tovs, setTovs] = useState<Record<string, string>>({
+    linkedin: linkedinIntegration?.toneOfVoice || "",
+    telegram: telegramIntegration?.toneOfVoice || "",
+  });
+  const [savingFor, setSavingFor] = useState<string | null>(null);
+
+  const handleGenerateTov = async (platform: string) => {
+    setGeneratingFor(platform);
+    try {
+      const res = await fetch(`/api/integrations/${platform}/tov`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || `Failed to generate Tone of Voice for ${platform}`);
+        return;
+      }
+      setTovs(prev => ({ ...prev, [platform]: data.toneOfVoice }));
+      toast.success(`${platform} Tone of Voice generated!`);
+    } catch (e) {
+      toast.error("An error occurred");
+    } finally {
+      setGeneratingFor(null);
+    }
+  };
+
+  const handleSaveTov = async (platform: string) => {
+    setSavingFor(platform);
+    try {
+      const res = await fetch(`/api/integrations/${platform}/tov`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceId, toneOfVoice: tovs[platform] }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Saved!");
+    } catch (e) {
+      toast.error("Failed to save");
+    } finally {
+      setSavingFor(null);
+    }
+  };
+
+  const renderPlatform = (platformId: string, platformName: string, isConnected: boolean, canGenerate: boolean = true) => {
+    const isGenerating = generatingFor === platformId;
+    const isSaving = savingFor === platformId;
+    const tov = tovs[platformId];
+
+    return (
+      <div className="card border bg-[var(--surface-1)] border-[var(--border)] p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-[15px] font-bold text-[var(--text-primary)]">
+            {platformName}
+          </div>
+          {isConnected ? (
+            <button
+              onClick={() => handleGenerateTov(platformId)}
+              disabled={isGenerating || !canGenerate}
+              className="btn btn-primary btn-sm"
+            >
+              {isGenerating ? <div className="spinner w-3 h-3" /> : "Generate Tone of Voice"}
+            </button>
+          ) : (
+            <div className="text-[12px] text-[var(--text-muted)] font-medium bg-[var(--surface-2)] px-2 py-1 rounded">
+              Connect first
+            </div>
+          )}
+        </div>
+
+        {isConnected ? (
+          <div className="flex flex-col gap-2">
+            <textarea
+              className="input text-[13px] leading-relaxed resize-y min-h-[100px]"
+              placeholder={canGenerate ? "Click 'Generate' to analyze your past posts, or type your Tone of Voice manually here..." : "Type your Tone of Voice manually here..."}
+              value={tov}
+              onChange={(e) => setTovs(prev => ({ ...prev, [platformId]: e.target.value }))}
+            />
+            <div className="flex justify-end">
+              <button
+                onClick={() => handleSaveTov(platformId)}
+                disabled={isSaving || !tov.trim()}
+                className="btn btn-ghost btn-sm text-[var(--text-secondary)]"
+              >
+                {isSaving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-[13px] text-[var(--text-muted)]">
+            You must connect {platformName} in the Integrations tab before you can set a Tone of Voice.
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="text-[13px] text-[var(--text-secondary)] mb-2">
+        Tone of Voice allows the AI to learn your writing style. Generate it automatically from your past posts, or write it manually.
+      </div>
+      
+      {renderPlatform("linkedin", "LinkedIn", !!linkedinIntegration, true)}
+      {renderPlatform("telegram", "Telegram", !!telegramIntegration, false)}
     </div>
   );
 }

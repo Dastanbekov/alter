@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { Zap } from "lucide-react";
 import type { OnboardingData } from "@/types";
@@ -9,6 +10,7 @@ import { WorkspaceFormFlow } from "@/components/onboarding/WorkspaceFormFlow";
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { update } = useSession();
 
   const handleFinish = async (data: OnboardingData) => {
     const res = await fetch("/api/workspaces", {
@@ -27,6 +29,9 @@ export default function OnboardingPage() {
       toast.error(err.error || "Failed to create workspace");
       throw new Error(err.error);
     }
+
+    // Update the session token with the new onboarded status
+    await update();
 
     toast.success("Workspace created! Let's go 🚀");
     // Hard redirect to clear any cached Next-Auth session state

@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
 
     // ─── PHASE A: Generate clarifying questions ────────────────────────────────
     if (!answers) {
@@ -182,8 +182,8 @@ Return ONLY valid JSON in this exact format:
         { status: 500 }
       );
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("[AI_STORY_PLAN]", error);
-    return NextResponse.json({ error: "Story plan generation failed" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Story plan generation failed" }, { status: 500 });
   }
 }

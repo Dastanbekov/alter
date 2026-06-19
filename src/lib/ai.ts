@@ -37,10 +37,10 @@ This is the third tweet.
   
   linkedin: `Write a LinkedIn post. STRICT RULES:
 - ZERO hashtags. Do NOT use any hashtags.
-- The first 150 characters are the hook (before the "See more" button) — they MUST be extremely engaging or the post will fail.
+- The first 150 characters are the hook (before the "See more" button) - they MUST be extremely engaging or the post will fail.
 - Authentic, grounded tone. AVOID cliché LinkedIn tropes (no "I am thrilled to announce", no "I've spent years...", no fake inspirational fluff). Be direct, raw, and realistic. Speak like a real founder talking to peers.
 - The post must be completely self-sufficient and valuable on its own.
-- Use line breaks for readability. 150-300 words.
+- Use line breaks for readability. 300-600 words. Write a LONG, detailed post with deep storytelling and valuable insights. Do NOT write short posts.
 - DO NOT use [TWEET_BREAK] or any other delimiter. Just write one continuous post.`,
   
   telegram: `Write a Telegram channel post. Rules:
@@ -71,8 +71,8 @@ The user wants to post about:
 ${platformInstructions}${tovInstruction}
 
 FORMATTING STRICT RULES:
+- INTERNAL RULE: NEVER use long dashes/em-dashes ("—" or "–"). You MUST use ONLY short hyphens ("-") everywhere.
 - DO NOT use markdown bold formatting (no **text**).
-- DO NOT use long em-dashes (—). Use regular hyphens if needed.
 - DO NOT break every single sentence into a new paragraph. Group text logically into cohesive paragraphs.
 - The Hook (first sentence) should be separated by a blank line, but keep the rest of the text grouped by meaning to avoid excessive spacing.
 

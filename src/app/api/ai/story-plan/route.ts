@@ -140,10 +140,11 @@ Rules:
 2. Assign realistic posting datetimes based on the user's timezone/region and platform best practices.
 3. IMPORTANT: For EACH step (Day 1, Day 2, etc.), you MUST generate a separate post node for EVERY selected platform. If the user selected 2 platforms and the campaign has 3 steps, you must return exactly 6 nodes.
 4. Adapt the content of each post to fit its specific platform while keeping the same core message for that day.
-5. Write FULL post content for each node (ready to publish — don't use placeholders).
-6. For X/Twitter: You MUST write a detailed Thread (chain of connected posts). Do NOT write just a single short post. Start the first post with a Hook. You MUST separate each tweet in the thread with exactly this text on a new line: [TWEET_BREAK]. Do NOT use labels like "Post 1". Each individual post must be under 280 chars. DO NOT use hashtags. Tone: Informal, sincere, self-ironic.
-7. For LinkedIn: ZERO hashtags (do NOT use hashtags). 150-300 words. The first 150 characters are the hook (MUST be extremely engaging). Authentic, grounded tone. AVOID cliché LinkedIn tropes (no "I am thrilled to announce", no "I've spent years...", no fake inspirational fluff). Be direct, raw, and realistic. Speak like a real founder talking to peers. DO NOT use [TWEET_BREAK] or thread format.
-8. For Telegram: conversational, bold markdown, no hashtags. DO NOT use [TWEET_BREAK].
+5. Write FULL post content for each node (ready to publish - don't use placeholders).
+6. INTERNAL RULE: NEVER use long dashes/em-dashes ("—" or "–"). You MUST use ONLY short hyphens ("-") everywhere in the generated content.
+7. For X/Twitter: You MUST write a detailed Thread (chain of connected posts). Do NOT write just a single short post. Start the first post with a Hook. You MUST separate each tweet in the thread with exactly this text on a new line: [TWEET_BREAK]. Do NOT use labels like "Post 1". Each individual post must be under 280 chars. DO NOT use hashtags. Tone: Informal, sincere, self-ironic.
+8. For LinkedIn: ZERO hashtags (do NOT use hashtags). 300-600 words. Write a LONG, detailed post with deep storytelling and valuable insights. The first 150 characters are the hook (MUST be extremely engaging). Authentic, grounded tone. AVOID cliché LinkedIn tropes (no "I am thrilled to announce", no "I've spent years...", no fake inspirational fluff). Be direct, raw, and realistic. Speak like a real founder talking to peers. DO NOT use [TWEET_BREAK] or thread format.
+9. For Telegram: conversational, bold markdown, no hashtags. DO NOT use [TWEET_BREAK].
 
 Return ONLY valid JSON in this exact format:
 {

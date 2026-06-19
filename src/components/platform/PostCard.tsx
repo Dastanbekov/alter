@@ -174,49 +174,64 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
 
         {/* Content */}
         {post.platform === "x" ? (
-          <div className="flex gap-3 px-4 pt-4 pb-3">
-            <div className="w-10 h-10 rounded-full bg-[var(--surface-3)] shrink-0 flex items-center justify-center font-bold text-[var(--text-secondary)]">
-              {workspace.name.substring(0, 2).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[15px] text-[var(--text-primary)] leading-[1.5] whitespace-pre-wrap font-sans">
-                {post.content}
-              </p>
+          <div className="flex flex-col pt-4 pb-3">
+            {post.content.split("[TWEET_BREAK]").map((tweet, idx, arr) => (
+              <div key={idx} className="flex gap-3 px-4 relative group">
+                {/* Vertical connecting line for threads */}
+                {idx < arr.length - 1 && (
+                  <div className="absolute left-[35px] top-10 bottom-[-16px] w-[2px] bg-[var(--border)] z-0" />
+                )}
+                
+                <div className="w-10 h-10 rounded-full bg-[var(--surface-3)] shrink-0 flex items-center justify-center font-bold text-[var(--text-secondary)] z-10 relative mt-1">
+                  {workspace.name.substring(0, 2).toUpperCase()}
+                </div>
+                
+                <div className="flex-1 min-w-0 pb-4">
+                  <p className="text-[15px] text-[var(--text-primary)] leading-[1.5] whitespace-pre-wrap font-sans pt-1">
+                    {tweet.trim()}
+                  </p>
 
-              {/* Image Recommendations */}
-              {post.imageRecommendations && post.imageRecommendations.length > 0 && (
-                <div className="mt-3">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <ImageIcon size={14} className="text-[#1a7352]" />
-                    <span className="text-[12px] font-semibold text-[#1a7352]">
-                      AI Image Recommendations
-                    </span>
-                  </div>
-                  <ul className="space-y-2">
-                    {post.imageRecommendations.map((rec, idx) => (
-                      <li key={idx} className="text-[13px] text-[var(--text-secondary)] flex items-start gap-2">
-                        <span className="w-4 h-4 rounded-full bg-[rgba(26,115,82,0.1)] text-[#1a7352] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                          {idx + 1}
+                  {/* Image Recommendations (show on last tweet only) */}
+                  {idx === arr.length - 1 && post.imageRecommendations && post.imageRecommendations.length > 0 && (
+                    <div className="mt-3">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <ImageIcon size={14} className="text-[#1a7352]" />
+                        <span className="text-[12px] font-semibold text-[#1a7352]">
+                          AI Image Recommendations
                         </span>
-                        <span className="leading-snug">{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                      </div>
+                      <ul className="space-y-2">
+                        {post.imageRecommendations.map((rec, i) => (
+                          <li key={i} className="text-[13px] text-[var(--text-secondary)] flex items-start gap-2">
+                            <span className="w-4 h-4 rounded-full bg-[rgba(26,115,82,0.1)] text-[#1a7352] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                              {i + 1}
+                            </span>
+                            <span className="leading-snug">{rec}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-              <div className="mt-4 flex items-center gap-1.5 text-[13px] text-[#1d9bf0] font-bold pb-3 border-b border-[var(--border)]">
-                <Globe size={14} /> Everyone can reply
-              </div>
-              
-              <div className="flex items-center justify-between pt-3">
-                <div className="flex items-center gap-4 text-[#1d9bf0]">
-                  <ImageIcon size={18} />
-                  <Smile size={18} />
-                  <MapPin size={18} />
+                  {/* Twitter actions (show on last tweet only) */}
+                  {idx === arr.length - 1 && (
+                    <>
+                      <div className="mt-4 flex items-center gap-1.5 text-[13px] text-[#1d9bf0] font-bold pb-3 border-b border-[var(--border)]">
+                        <Globe size={14} /> Everyone can reply
+                      </div>
+                      
+                      <div className="flex items-center justify-between pt-3">
+                        <div className="flex items-center gap-4 text-[#1d9bf0]">
+                          <ImageIcon size={18} />
+                          <Smile size={18} />
+                          <MapPin size={18} />
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         ) : (
           <div className="px-4 py-3.5">

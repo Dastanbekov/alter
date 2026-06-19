@@ -23,13 +23,15 @@ export interface GeneratedPost {
 const PLATFORM_INSTRUCTIONS: Record<string, string> = {
   x: `Write a post for X (Twitter). STRICT RULES:
 - Format: You should write a detailed Thread (a chain of connected posts). Do NOT write just a single short post.
-- Structure: Start the first post with a powerful Hook (provocative question, bold opinion, value promise) and end it with a thread emoji (🧵). Then write several more posts continuing the story. Each individual post must be under 280 characters, but the overall thread should tell the full story.
-- Output Format: Clearly separate the posts like this:
-Post 1: [text] 🧵
-
-Post 2: [text]
-
-Post 3: [text]
+- Structure: Start the first post with a powerful Hook (provocative question, bold opinion, value promise). Then write several more posts continuing the story. Each individual post must be under 280 characters, but the overall thread should tell the full story.
+- Output Format: You MUST separate each tweet in the thread with exactly this text on a new line: [TWEET_BREAK]
+Example:
+This is the first tweet.
+[TWEET_BREAK]
+This is the second tweet.
+[TWEET_BREAK]
+This is the third tweet.
+- Do NOT use labels like "Post 1:" or "Post 2:". Just use the delimiter.
 - Hashtags: DO NOT use hashtags. The algorithm understands context without them.
 - Tone/Culture: Informal, sincere, self-ironic. NO complex literary language or "glossy" corporate speak. Embrace shitposting/meme culture if appropriate. Make it conversational.`,
   

@@ -202,22 +202,35 @@ export async function POST(req: NextRequest) {
               }
             }
 
-            const xRes = await fetch("https://api.twitter.com/2/tweets", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${activeToken}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                text: content,
-              }),
-            });
+            const tweets = content.split("[TWEET_BREAK]").map((t: string) => t.trim()).filter(Boolean);
+            let previousTweetId: string | null = null;
             
-            if (xRes.ok) success = true;
-            else {
-              const err = await xRes.json();
-              errorMsg = err.detail || "X API Error";
-              console.error("X API Error:", err);
+            for (let i = 0; i < tweets.length; i++) {
+              const body: any = { text: tweets[i] };
+              if (previousTweetId) {
+                body.reply = { in_reply_to_tweet_id: previousTweetId };
+              }
+
+              const xRes = await fetch("https://api.twitter.com/2/tweets", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${activeToken}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+              });
+              
+              if (!xRes.ok) {
+                const err = await xRes.json();
+                errorMsg = err.detail || "X API Error";
+                console.error("X API Error:", err);
+                success = false;
+                break; // Stop the thread if one fails
+              } else {
+                success = true;
+                const data = await xRes.json();
+                previousTweetId = data.data.id;
+              }
             }
           }
 

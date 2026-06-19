@@ -143,21 +143,35 @@ export async function GET() {
             }
           }
 
-          const xRes = await fetch("https://api.twitter.com/2/tweets", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${activeToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              text: post.content,
-            }),
-          });
+          const tweets = post.content.split("[TWEET_BREAK]").map((t: string) => t.trim()).filter(Boolean);
+          let previousTweetId: string | null = null;
           
-          if (xRes.ok) success = true;
-          else {
-            const err = await xRes.json();
-            errorMsg = err.detail || "X API Error";
+          for (let i = 0; i < tweets.length; i++) {
+            const body: any = { text: tweets[i] };
+            if (previousTweetId) {
+              body.reply = { in_reply_to_tweet_id: previousTweetId };
+            }
+
+            const xRes = await fetch("https://api.twitter.com/2/tweets", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${activeToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(body),
+            });
+            
+            if (!xRes.ok) {
+              const err = await xRes.json();
+              errorMsg = err.detail || "X API Error";
+              console.error("X API Error:", err);
+              success = false;
+              break; // Stop the thread if one fails
+            } else {
+              success = true;
+              const data = await xRes.json();
+              previousTweetId = data.data.id;
+            }
           }
         }
       } catch (e) {

@@ -1,7 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { useState, Suspense, lazy } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
+
+const Dithering = lazy(() =>
+  import("@paper-design/shaders-react").then((mod) => ({ default: mod.Dithering }))
+);
 
 // --- Social Media Platform Icons ---
 const IconX = (props: React.SVGProps<SVGSVGElement>) => (
@@ -160,6 +165,7 @@ const heroIcons: HeroIconData[] = [
 export function HeroSection() {
   const mouseX = React.useRef(0);
   const mouseY = React.useRef(0);
+  const [hovered, setHovered] = useState(false);
 
   return (
     <section
@@ -171,7 +177,23 @@ export function HeroSection() {
         mouseX.current = e.clientX;
         mouseY.current = e.clientY;
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
+      {/* Dithering shader background */}
+      <Suspense fallback={null}>
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-30 mix-blend-multiply">
+          <Dithering
+            colorBack="#00000000"
+            colorFront="#1a7352"
+            shape="warp"
+            type="4x4"
+            speed={hovered ? 0.5 : 0.15}
+            className="size-full"
+            minPixelRatio={1}
+          />
+        </div>
+      </Suspense>
       {/* Floating social icons background */}
       <div className="absolute inset-0 w-full h-full hidden md:block pointer-events-none">
         {heroIcons.map((icon, index) => (

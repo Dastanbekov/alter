@@ -19,19 +19,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Messages array required" }, { status: 400 });
     }
 
-    const systemInstruction = `You are an AI assistant helping a user create social media posts for a workspace named "${workspaceName}" (Purpose: ${workspacePurpose}). 
-Your goal is strictly to gather the minimum necessary information to generate social media posts. Do NOT engage in idle chat.
-When the user shares news or an event, evaluate what basic info is missing (e.g. project name, target audience).
-If information is missing, you MUST output a questionnaire for the user to fill out. 
-Format your questionnaire EXACTLY like this JSON block on a new line (max 3-4 questions):
-[QUESTIONNAIRE: [{"id": "q1", "label": "Project name?"}, {"id": "q2", "label": "Key achievement?"}]]
+    const systemInstruction = `You are an AI assistant helping a user plan social media posts for a workspace named "${workspaceName}" (Purpose: ${workspacePurpose}). 
+Your goal is strictly to gather the minimum necessary information to generate social media posts.
 
-CRITICAL RULE 1: You are only allowed to ask ONE questionnaire per session. 
-CRITICAL RULE 2: Once the user provides answers to your questionnaire, you MUST NOT ask any more questions or generate another questionnaire. You must accept whatever they answered.
-CRITICAL RULE 3: If you have received the answers to your questionnaire, or if the initial prompt already contains enough information to make a post, you MUST immediately output EXACTLY the following text and nothing else:
+EVALUATION LOGIC:
+1. Review the conversation history.
+2. If the user has provided enough information to write decent posts (e.g. they provided the core topic, what happened, or key details), or if they have ALREADY answered a previous questionnaire, you MUST output EXACTLY the following text and nothing else:
 [REQUEST_GENERATE_POSTS]
+3. If the user's input is too brief or lacks basic context (e.g., they just said "write a post about AI" but didn't specify what about AI), you should ask them for more details. To do so, output a questionnaire in EXACTLY this JSON format on a new line:
+[QUESTIONNAIRE: [{"id": "q1", "label": "Project name?"}, {"id": "q2", "label": "Target audience?"}]]
 
-Remember: your only job is to guide the user to fill out ONE questionnaire and then immediately output [REQUEST_GENERATE_POSTS].`;
+CRITICAL RULES:
+- If the last user message contains their answers (e.g. it includes "Goal: " or answers to your questions), DO NOT ask again. Immediately output [REQUEST_GENERATE_POSTS].
+- Do not engage in normal conversation. Your output must be EITHER a [QUESTIONNAIRE: ...] OR [REQUEST_GENERATE_POSTS].`;
 
     const openAiMessages = [
       { role: "system", content: systemInstruction },
@@ -41,19 +41,12 @@ Remember: your only job is to guide the user to fill out ONE questionnaire and t
       })),
     ];
 
-    const lastUserMessage = messages.filter((m: any) => m.role === "user").pop();
-    const isQuestionnaireSubmit = lastUserMessage?.content.includes("Goal: ") && lastUserMessage?.content.includes(": ");
-
-    let text = "";
-    if (isQuestionnaireSubmit) {
-      text = "[REQUEST_GENERATE_POSTS]";
-    } else {
-      const response = await openai.chat.completions.create({
-        model: "deepseek-chat",
-        messages: openAiMessages as any,
-      });
-      text = response.choices[0]?.message?.content?.trim() || "";
-    }
+    const response = await openai.chat.completions.create({
+      model: "deepseek-chat",
+      messages: openAiMessages as any,
+    });
+    
+    const text = response.choices[0]?.message?.content?.trim() || "";
 
     let chatTitle = null;
     if (messages.length === 1) {

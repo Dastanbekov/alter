@@ -139,7 +139,10 @@ Return ONLY valid JSON in this exact format:
       "day": 1,
       "scheduledAt": "2024-06-20T09:00:00.000Z",
       "platform": "linkedin",
-      "content": "Full post content here..."
+      "content": "Full post content here...",
+      "imageRecommendations": [
+        "Description of an image the user should attach (e.g., 'A sleek screenshot of the new dashboard'). Provide 0, 1, or more suggestions depending on what is optimal for this post."
+      ]
     }
   ]
 }`;

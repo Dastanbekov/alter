@@ -198,11 +198,12 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
         id: nanoid(),
         context,
         posts: data.posts.map(
-          (p: { platform: SocialPlatform; content: string }) => ({
+          (p: { platform: SocialPlatform; content: string; imageRecommendations?: string[] }) => ({
             id: nanoid(),
             platform: p.platform,
             content: p.content,
             status: "draft" as const,
+            imageRecommendations: p.imageRecommendations,
           })
         ),
         createdAt: new Date(),

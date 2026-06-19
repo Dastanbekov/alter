@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Send, Clock, Check, X, Zap } from "lucide-react";
+import { Pencil, Send, Clock, Check, X, Zap, Image as ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { ScheduleModal } from "./ScheduleModal";
 import type { GeneratedPostItem, Workspace, SocialPlatform } from "@/types";
@@ -177,6 +177,28 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
           <p className="text-[14px] text-[var(--text-primary)] leading-[1.7] whitespace-pre-wrap">
             {post.content}
           </p>
+
+          {/* Image Recommendations */}
+          {post.imageRecommendations && post.imageRecommendations.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-[var(--border)]">
+              <div className="flex items-center gap-1.5 mb-2">
+                <ImageIcon size={14} className="text-[#1a7352]" />
+                <span className="text-[12px] font-semibold text-[#1a7352]">
+                  AI Image Recommendations
+                </span>
+              </div>
+              <ul className="space-y-2">
+                {post.imageRecommendations.map((rec, idx) => (
+                  <li key={idx} className="text-[13px] text-[var(--text-secondary)] flex items-start gap-2">
+                    <span className="w-4 h-4 rounded-full bg-[rgba(26,115,82,0.1)] text-[#1a7352] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <span className="leading-snug">{rec}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Mini editor */}

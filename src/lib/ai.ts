@@ -17,6 +17,7 @@ export interface GeneratePostsInput {
 export interface GeneratedPost {
   platform: "x" | "linkedin" | "telegram";
   content: string;
+  imageRecommendations?: string[];
 }
 
 const PLATFORM_INSTRUCTIONS: Record<string, string> = {
@@ -67,15 +68,36 @@ FORMATTING STRICT RULES:
 - DO NOT break every single sentence into a new paragraph. Group text logically into cohesive paragraphs.
 - The Hook (first sentence) should be separated by a blank line, but keep the rest of the text grouped by meaning to avoid excessive spacing.
 
-Write ONLY the post content. No explanations, no "Here's your post:", just the raw post text.`;
+Write your response in STRICT JSON format. Ensure the JSON is valid and can be parsed.
+Structure:
+{
+  "content": "The actual post text.",
+  "imageRecommendations": [
+    "Description of an image the user should attach (e.g., 'A sleek screenshot of the new dashboard'). Provide 0, 1, or more suggestions depending on what is optimal for this post."
+  ]
+}`;
 
     try {
       const response = await openai.chat.completions.create({
         model: "deepseek-chat",
+        response_format: { type: "json_object" },
         messages: [{ role: "user", content: prompt }],
       });
-      const text = response.choices[0]?.message?.content?.trim() || "";
-      results.push({ platform: item.platform, content: text });
+      const text = response.choices[0]?.message?.content?.trim() || "{}";
+      
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (e) {
+        // Fallback if AI fails to return JSON
+        parsed = { content: text, imageRecommendations: [] };
+      }
+
+      results.push({ 
+        platform: item.platform, 
+        content: parsed.content || text,
+        imageRecommendations: parsed.imageRecommendations || []
+      });
     } catch (error) {
       console.error(`Error generating post for ${item.platform}:`, error);
       results.push({

@@ -55,11 +55,13 @@ export async function GET() {
     const availableFree = Math.max(0, 2 - freePostsUsed);
     const totalAvailable = availableFree + user.paidCredits;
 
+    const isProActive = user.isPro || user.paidCredits > 0;
+
     return NextResponse.json({
       paidCredits: user.paidCredits,
       availableFree,
       totalAvailable,
-      isPro: user.isPro,
+      isPro: isProActive,
     });
   } catch (error) {
     console.error("[BILLING_GET]", error);

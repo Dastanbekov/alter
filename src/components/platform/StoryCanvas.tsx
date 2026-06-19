@@ -301,6 +301,7 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
                 platform: openNode.platform,
                 content: openNode.content,
                 status: "draft",
+                imageRecommendations: openNode.imageRecommendations,
               }}
               workspace={workspace}
               onUpdate={(content) => {

@@ -63,6 +63,7 @@ export interface GeneratedPostItem {
   content: string;
   status: PostStatus;
   scheduledAt?: Date;
+  imageRecommendations?: string[];
 }
 
 export interface OnboardingData {
@@ -79,6 +80,7 @@ export interface StoryNode {
   scheduledAt: string;    // ISO datetime string chosen by AI
   platform: SocialPlatform;
   content: string;
+  imageRecommendations?: string[];
 }
 
 export interface Story {

@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
       where: { id: userId },
       data: {
         paidCredits: { increment: postsAmount },
+        isPro: true, // Unlock Pro features permanently after first purchase
       },
     });
 

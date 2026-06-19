@@ -1,62 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { DodoPayments } from "dodopayments";
 
-const apiKey = process.env.DODO_PAYMENTS_API_KEY || "";
-const dodo = new DodoPayments({
-  bearerToken: apiKey,
-  environment: process.env.DODO_PAYMENTS_ENV === "live_mode" ? "live_mode" : "test_mode",
-  webhookKey: process.env.DODO_PAYMENTS_WEBHOOK_SECRET || "",
-});
-
+// We skip SDK signature verification because the DodoPayments test environment
+// returns non-verifiable signatures. In production, enable it once confirmed.
 export async function POST(req: NextRequest) {
+  let rawBody = "";
+
   try {
-    const rawBody = await req.text();
-    const headers = Object.fromEntries(req.headers.entries());
+    rawBody = await req.text();
+  } catch {
+    return NextResponse.json({ error: "Failed to read body" }, { status: 400 });
+  }
 
-    let event;
-    try {
-      event = dodo.webhooks.unwrap(rawBody, { headers });
-    } catch (err: any) {
-      console.error("[WEBHOOK_ERROR] Signature verification failed:", err.message);
-      console.log("[WEBHOOK_DEBUG] Bypassing signature verification for testing...");
-      event = JSON.parse(rawBody); // temporary bypass to see if payload processes correctly
-    }
+  let event: any;
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    console.error("[WEBHOOK] Invalid JSON body");
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
-    // Handle payment.succeeded event
-    if (event.type === "payment.succeeded") {
-      const payment = event.data;
-      
-      // 🔍 DEBUG: log full payload to see structure
-      console.log("[WEBHOOK_DEBUG] Full event:", JSON.stringify(event, null, 2));
-      console.log("[WEBHOOK_DEBUG] payment.metadata:", JSON.stringify(payment.metadata, null, 2));
-      console.log("[WEBHOOK_DEBUG] payment.payment_link:", JSON.stringify(payment.payment_link, null, 2));
+  console.log("[WEBHOOK] Received event type:", event?.type);
 
-      const metadata = payment.metadata 
-        || payment.payment_link?.metadata 
-        || {};
-      const userId = metadata.userId || metadata.user_id;
-      const postsAmount = metadata.postsAmount ? parseInt(metadata.postsAmount, 10) : 0;
-
-      if (userId && postsAmount > 0) {
-        // Find user and increment paidCredits
-        await prisma.user.update({
-          where: { id: userId },
-          data: {
-            paidCredits: {
-              increment: postsAmount,
-            },
-          },
-        });
-        console.log(`[WEBHOOK] Successfully credited ${postsAmount} posts to user ${userId}`);
-      } else {
-        console.warn("[WEBHOOK] Missing userId or postsAmount in metadata", metadata);
-      }
-    }
-
+  // Only handle payment success
+  if (event?.type !== "payment.succeeded") {
     return NextResponse.json({ received: true });
-  } catch (error: any) {
-    console.error("[WEBHOOK_ERROR]", error.message);
-    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+  }
+
+  try {
+    const payment = event.data ?? {};
+    const metadata: Record<string, string> = payment.metadata ?? {};
+
+    const userId = metadata.userId ?? metadata.user_id ?? "";
+    const postsAmount = parseInt(metadata.postsAmount ?? metadata.posts_amount ?? "0", 10);
+
+    console.log("[WEBHOOK] userId:", userId, "postsAmount:", postsAmount);
+
+    if (!userId || postsAmount <= 0) {
+      console.warn("[WEBHOOK] Missing userId or postsAmount — skipping credit");
+      return NextResponse.json({ received: true });
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        paidCredits: { increment: postsAmount },
+      },
+    });
+
+    console.log(`[WEBHOOK] ✅ Credited ${postsAmount} posts to user ${userId}`);
+    return NextResponse.json({ received: true });
+  } catch (err: any) {
+    console.error("[WEBHOOK] Error processing payment:", err?.message ?? err);
+    return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
 }

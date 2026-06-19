@@ -10,12 +10,13 @@ export function BillingView({ onSuccess }: Props) {
   const [postsAmount, setPostsAmount] = useState(50);
   const [loading, setLoading] = useState(false);
 
-  // Pricing logic
+  // Pricing logic — must match /api/user/billing/buy and PricingSection
   const getPrice = (posts: number) => {
-    if (posts <= 10) return 2.5;
-    if (posts <= 50) return 8.0;
-    if (posts <= 100) return 12.0;
-    return (posts / 500) * 40.0;
+    if (posts <= 10) return 3.0;
+    if (posts <= 50) return 10.0;
+    if (posts <= 100) return 18.0;
+    if (posts <= 200) return 32.0;
+    return (posts / 500) * 69.0;
   };
 
   const handleBuy = async () => {
@@ -31,7 +32,7 @@ export function BillingView({ onSuccess }: Props) {
 
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url; // Redirect to Polar checkout
+        window.location.href = data.url; // Redirect to DodoPayments checkout
       } else {
         toast.error("Failed to generate checkout link");
       }

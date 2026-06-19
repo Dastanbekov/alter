@@ -51,19 +51,17 @@ A user wants to launch a content campaign. Their brief:
 
 Workspace: "${workspace.name}" (${workspace.purpose})
 
-Your task: generate EXACTLY 3-4 clarifying questions to understand their campaign better.
-IMPORTANT: Always include one question asking which platforms they want to use (LinkedIn, X/Twitter, Telegram).
-Also ask about timeline/duration, and their target audience or geographic region (for choosing optimal posting times).
+Your task: generate 0 to 3 clarifying questions to understand their campaign better.
+IMPORTANT: Only ask questions if the brief is unclear or missing critical information (like timeline/duration, target audience, or specific goals). If the brief is detailed enough, return an empty array.
 
 Return ONLY valid JSON in this exact format, no extra text:
 {
   "questions": [
-    { "id": "q1", "label": "Which platforms should we publish on? (LinkedIn, X/Twitter, Telegram)", "type": "multiselect", "options": ["linkedin", "x", "telegram"] },
-    { "id": "q2", "label": "How long is your campaign timeline? (e.g. 1 week, 2 weeks, 1 month)", "type": "text" },
-    { "id": "q3", "label": "Who is your target audience and their timezone/region?", "type": "text" },
-    { "id": "q4", "label": "What is the main goal? (e.g. raise awareness, get signups, drive traffic)", "type": "text" }
+    { "id": "q1", "label": "How long is your campaign timeline? (e.g. 1 week, 2 weeks, 1 month)", "type": "text" },
+    { "id": "q2", "label": "Who is your target audience?", "type": "text" }
   ]
-}`;
+}
+If no questions are needed, return: {"questions": []}`;
 
       const response = await openai.chat.completions.create({
         model: "deepseek-chat",
@@ -89,6 +87,24 @@ Return ONLY valid JSON in this exact format, no extra text:
     // ─── PHASE B: Generate full campaign plan ─────────────────────────────────
     const selectedPlatforms: string[] = platforms || ["linkedin"];
     const platformHints = selectedPlatforms.map((p: string) => PLATFORM_BEST_TIMES[p] || "").join("\n");
+
+    // Save answers to workspace details so AI remembers them for the future
+    if (answers && Object.keys(answers).length > 0) {
+      const answersString = Object.entries(answers)
+        .filter(([k, v]) => k !== "platforms" && typeof v === "string" && v.trim() !== "")
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("\n");
+        
+      if (answersString) {
+        const currentDetails = workspace.details || "";
+        const updatedDetails = currentDetails ? `${currentDetails}\n\nUser Context:\n${answersString}` : `User Context:\n${answersString}`;
+        
+        await prisma.workspace.update({
+          where: { id: workspaceId },
+          data: { details: updatedDetails }
+        });
+      }
+    }
 
     const integrations = await prisma.integration.findMany({
       where: { workspaceId, platform: { in: selectedPlatforms } },

@@ -35,6 +35,11 @@ export function StoryModePanel({ workspace, onBillingUpdate }: Props) {
   const [story, setStory] = useState<Story | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const wsPlats = workspace.socials.map((s) => s.platform as SocialPlatform);
+    setSelectedPlatforms(wsPlats.length > 0 ? wsPlats : ["linkedin"]);
+  }, [workspace]);
+
   // ── Step 1: Submit brief, get questions from AI ───────────────────────────
   const handleBriefSubmit = async () => {
     const text = brief.trim();
@@ -52,14 +57,45 @@ export function StoryModePanel({ workspace, onBillingUpdate }: Props) {
         return;
       }
       if (data.phase === "questions") {
-        setQuestions(data.data.questions);
-        // Pre-select all available platforms in workspace
-        const platformQ = data.data.questions.find((q: Question) => q.type === "multiselect");
-        if (platformQ) {
-          const wsPlats = workspace.socials.map((s) => s.platform as SocialPlatform);
-          setSelectedPlatforms(wsPlats.length > 0 ? wsPlats : ["linkedin"]);
+        const generatedQuestions = data.data.questions || [];
+        setQuestions(generatedQuestions);
+        
+        if (generatedQuestions.length === 0) {
+          // No questions needed, proceed immediately to plan generation
+          setStep("generating");
+          const planRes = await fetch("/api/ai/story-plan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              workspaceId: workspace.id,
+              brief: text,
+              answers: { platforms: selectedPlatforms },
+              platforms: selectedPlatforms,
+            }),
+          });
+          const planData = await planRes.json();
+          if (!planRes.ok) throw new Error(planData.error || "Failed to generate plan");
+          if (planData.phase === "plan") {
+            const saveRes = await fetch("/api/stories", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                workspaceId: workspace.id,
+                title: planData.data.title,
+                brief: text,
+                platforms: selectedPlatforms,
+                nodes: planData.data.nodes,
+              }),
+            });
+            const saved = await saveRes.json();
+            if (!saveRes.ok) throw new Error("Failed to save campaign");
+            onBillingUpdate();
+            setStory(saved);
+            setStep("canvas");
+          }
+        } else {
+          setStep("questions");
         }
-        setStep("questions");
       }
     } catch {
       toast.error("Something went wrong");
@@ -227,7 +263,34 @@ export function StoryModePanel({ workspace, onBillingUpdate }: Props) {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleBriefSubmit();
               }}
             />
-            <div className="flex items-center justify-end mt-3">
+            {/* Native Platform Selector */}
+            <div className="mt-4 pt-4 border-t border-[var(--border)]">
+              <label className="block text-[12px] font-semibold text-[var(--text-secondary)] mb-2.5">
+                Which platforms should we publish on?
+              </label>
+              <div className="flex gap-2">
+                {(["linkedin", "x", "telegram"] as SocialPlatform[]).map((opt) => {
+                  const isSelected = selectedPlatforms.includes(opt);
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => togglePlatform(opt)}
+                      className="px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all duration-200 cursor-pointer"
+                      style={{
+                        borderColor: isSelected ? "#1a7352" : "var(--border)",
+                        background: isSelected ? "rgba(26,115,82,0.15)" : "var(--surface-3)",
+                        color: isSelected ? "#1a7352" : "var(--text-secondary)",
+                      }}
+                    >
+                      {PLATFORM_LABELS[opt]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end mt-4">
               <button
                 onClick={handleBriefSubmit}
                 disabled={!brief.trim() || loading}

@@ -5,6 +5,7 @@ import { CheckCircle, Clock, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import type { Story, StoryNode, SocialPlatform, Workspace } from "@/types";
 import { PostCard } from "./PostCard";
+import { LinkedInPostPreviewModal } from "./LinkedInPostPreviewModal";
 
 const PLATFORM_INFO: Record<
   SocialPlatform,
@@ -295,26 +296,46 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
           onClick={(e) => e.target === e.currentTarget && setOpenNode(null)}
         >
           <div className="w-full max-w-[520px] relative">
-            <PostCard
-              post={{
-                id: openNode.id,
-                platform: openNode.platform,
-                content: openNode.content,
-                status: "draft",
-                imageRecommendations: openNode.imageRecommendations,
-              }}
-              workspace={workspace}
-              onUpdate={(content) => {
-                handleNodeUpdate(openNode.id, content);
-                setOpenNode({ ...openNode, content });
-              }}
-            />
-            <button
-              onClick={() => setOpenNode(null)}
-              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[var(--surface-3)] border border-[var(--border)] text-[var(--text-secondary)] flex items-center justify-center cursor-pointer hover:bg-[var(--surface-4)] transition-colors z-10"
-            >
-              ×
-            </button>
+            {openNode.platform === "linkedin" ? (
+              <LinkedInPostPreviewModal
+                post={{
+                  id: openNode.id,
+                  platform: openNode.platform,
+                  content: openNode.content,
+                  status: "draft",
+                  imageRecommendations: openNode.imageRecommendations,
+                }}
+                workspace={workspace}
+                onClose={() => setOpenNode(null)}
+                onUpdate={(content) => {
+                  handleNodeUpdate(openNode.id, content);
+                  setOpenNode({ ...openNode, content });
+                }}
+              />
+            ) : (
+              <PostCard
+                post={{
+                  id: openNode.id,
+                  platform: openNode.platform,
+                  content: openNode.content,
+                  status: "draft",
+                  imageRecommendations: openNode.imageRecommendations,
+                }}
+                workspace={workspace}
+                onUpdate={(content) => {
+                  handleNodeUpdate(openNode.id, content);
+                  setOpenNode({ ...openNode, content });
+                }}
+              />
+            )}
+            {openNode.platform !== "linkedin" && (
+              <button
+                onClick={() => setOpenNode(null)}
+                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[var(--surface-3)] border border-[var(--border)] text-[var(--text-secondary)] flex items-center justify-center cursor-pointer hover:bg-[var(--surface-4)] transition-colors z-10"
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
       )}

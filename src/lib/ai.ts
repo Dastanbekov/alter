@@ -38,15 +38,16 @@ This is the third tweet.
   linkedin: `Write a LinkedIn post. STRICT RULES:
 - ZERO hashtags. Do NOT use any hashtags.
 - The first 150 characters are the hook (before the "See more" button) — they MUST be extremely engaging or the post will fail.
-- The post must be completely self-sufficient and valuable on its own, without relying on external links.
-- Professional but human tone. Add value: insight, lesson, or story.
-- Use line breaks for readability. 150-300 words.`,
+- Authentic, grounded tone. AVOID cliché LinkedIn tropes (no "I am thrilled to announce", no "I've spent years...", no fake inspirational fluff). Be direct, raw, and realistic. Speak like a real founder talking to peers.
+- The post must be completely self-sufficient and valuable on its own.
+- Use line breaks for readability. 150-300 words.
+- DO NOT use [TWEET_BREAK] or any other delimiter. Just write one continuous post.`,
   
   telegram: `Write a Telegram channel post. Rules:
-- Conversational and direct
+- Conversational tone, use bold markdown for emphasis.
+- No hashtags. No [TWEET_BREAK]. Just write one single message.
 - Can be longer than Twitter but concise
 - Can use emoji
-- No hashtags needed
 - Feels like talking to subscribers directly`,
 };
 
@@ -89,6 +90,7 @@ Structure:
         model: "deepseek-chat",
         response_format: { type: "json_object" },
         messages: [{ role: "user", content: prompt }],
+        max_tokens: 4096,
       });
       const text = response.choices[0]?.message?.content?.trim() || "{}";
       
@@ -134,6 +136,7 @@ Apply the changes and return ONLY the updated post. No explanations.`;
   const response = await openai.chat.completions.create({
     model: "deepseek-chat",
     messages: [{ role: "user", content: prompt }],
+    max_tokens: 2048,
   });
 
   return response.choices[0]?.message?.content?.trim() || "";

@@ -214,6 +214,28 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
                 </div>
               </div>
             )}
+
+            {/* Image Recommendations */}
+            {post.imageRecommendations && post.imageRecommendations.length > 0 && (
+              <div className="mt-4 px-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <ImageIcon size={14} className="text-[#1a7352]" />
+                  <span className="text-[12px] font-semibold text-[#1a7352]">
+                    AI Image Recommendations
+                  </span>
+                </div>
+                <ul className="space-y-2">
+                  {post.imageRecommendations.map((rec, idx) => (
+                    <li key={idx} className="text-[13px] text-gray-600 flex items-start gap-2">
+                      <span className="w-4 h-4 rounded-full bg-[#1a7352]/10 text-[#1a7352] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        {idx + 1}
+                      </span>
+                      <span className="leading-snug">{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 

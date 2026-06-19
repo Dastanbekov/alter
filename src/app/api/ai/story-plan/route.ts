@@ -125,7 +125,7 @@ Rules:
 3. IMPORTANT: For EACH step (Day 1, Day 2, etc.), you MUST generate a separate post node for EVERY selected platform. If the user selected 2 platforms and the campaign has 3 steps, you must return exactly 6 nodes.
 4. Adapt the content of each post to fit its specific platform while keeping the same core message for that day.
 5. Write FULL post content for each node (ready to publish — don't use placeholders).
-6. For X/Twitter: Max 280 chars (if longer, make it a Thread with 🧵). Start with a powerful Hook. Add "air" (spacing) between lines. DO NOT use hashtags. Tone: Informal, sincere, self-ironic. NO complex literary language.
+6. For X/Twitter: You MUST write a detailed Thread (chain of connected posts). Do NOT write just a single short post. Start the first post with a Hook and end it with a thread emoji (🧵). Then write several more posts continuing the story. Clearly separate them like "Post 1:", "Post 2:", etc. Each individual post must be under 280 chars. DO NOT use hashtags. Tone: Informal, sincere, self-ironic.
 7. For LinkedIn: ZERO hashtags (do NOT use hashtags). 150-300 words. The first 150 characters are the hook (MUST be extremely engaging). Post must be self-sufficient and valuable.
 8. For Telegram: conversational, bold markdown, no hashtags.
 

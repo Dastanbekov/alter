@@ -22,9 +22,15 @@ export interface GeneratedPost {
 
 const PLATFORM_INSTRUCTIONS: Record<string, string> = {
   x: `Write a post for X (Twitter). STRICT RULES:
-- Limit: 280 characters. If the thought is longer, write a Thread (a chain of posts) and put a thread emoji (🧵) at the end of the first post.
-- Structure: Start with a powerful Hook in the very first line (a provocative question, bold opinion, or clear value promise). Add "air" (spacing) between lines. Use bullets/lists.
-- Hashtags: DO NOT use hashtags (unless it's a global flashmob). The algorithm understands context without them.
+- Format: You should write a detailed Thread (a chain of connected posts). Do NOT write just a single short post.
+- Structure: Start the first post with a powerful Hook (provocative question, bold opinion, value promise) and end it with a thread emoji (🧵). Then write several more posts continuing the story. Each individual post must be under 280 characters, but the overall thread should tell the full story.
+- Output Format: Clearly separate the posts like this:
+Post 1: [text] 🧵
+
+Post 2: [text]
+
+Post 3: [text]
+- Hashtags: DO NOT use hashtags. The algorithm understands context without them.
 - Tone/Culture: Informal, sincere, self-ironic. NO complex literary language or "glossy" corporate speak. Embrace shitposting/meme culture if appropriate. Make it conversational.`,
   
   linkedin: `Write a LinkedIn post. STRICT RULES:

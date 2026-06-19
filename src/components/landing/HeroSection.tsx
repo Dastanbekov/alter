@@ -201,10 +201,10 @@ export function HeroSection() {
 
       {/* Content — one big glassmorphism card */}
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4 sm:px-6 py-[80px]">
-        <div className="w-full max-w-[860px] bg-white/20 backdrop-blur-[8px] rounded-[40px] border border-white/50 shadow-[0_8px_64px_rgba(255,255,255,0.2)] overflow-hidden">
+        <div className="w-full max-w-[1100px] bg-white/20 backdrop-blur-[8px] rounded-[40px] border border-white/50 shadow-[0_8px_64px_rgba(255,255,255,0.2)] overflow-hidden flex flex-col lg:flex-row lg:items-center">
 
           {/* Text content */}
-          <div className="px-10 py-12 sm:px-16 sm:py-16 lg:px-20 lg:py-20">
+          <div className="flex-1 px-10 py-12 sm:px-14 sm:py-14 lg:px-16 lg:py-16">
             <h1 className="font-['Outfit'] text-[clamp(36px,5vw,68px)] font-extrabold leading-[1.1] text-[#1a1a1a] mb-6">
               Publish everywhere.{" "}
               <span className="bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-transparent bg-clip-text">
@@ -244,6 +244,15 @@ export function HeroSection() {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Phone mockup — desktop only */}
+          <div className="hidden lg:flex items-end justify-center pr-10 lg:w-[360px] shrink-0 self-end">
+            <img
+              src="/hero-mockup.png"
+              alt="Alter Mobile Mockup"
+              className="w-full max-w-[280px] h-auto object-contain drop-shadow-[0_32px_64px_rgba(0,0,0,0.18)] hover:scale-105 transition-transform duration-700 ease-out"
+            />
           </div>
 
         </div>

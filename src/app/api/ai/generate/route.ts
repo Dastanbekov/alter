@@ -79,28 +79,8 @@ export async function POST(req: NextRequest) {
       select: { platform: true, toneOfVoice: true },
     });
 
-    const connectedPlatforms = integrations.map((i) => i.platform);
-    const workspacePlatforms = workspace.socials.map((s) => s.platform);
-
-    // Platforms that are requested AND in workspace AND have integration
-    const activePlatforms = platforms.filter((p: string) =>
-      workspacePlatforms.includes(p) && connectedPlatforms.includes(p)
-    );
-
-    if (activePlatforms.length === 0) {
-      return NextResponse.json(
-        {
-          error: "no_integrations",
-          message:
-            "No connected accounts found. Please connect at least one social media account in Settings → Integrations.",
-          workspacePlatforms,
-        },
-        { status: 422 }
-      );
-    }
-
     // Generate posts
-    const inputs = activePlatforms.map((platform) => {
+    const inputs = platforms.map((platform: string) => {
       const integration = integrations.find((i) => i.platform === platform);
       return {
         platform: platform as SocialPlatform,
@@ -149,7 +129,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ posts: generated, activePlatforms });
+    return NextResponse.json({ posts: generated, activePlatforms: platforms });
   } catch (error) {
     console.error("[AI_GENERATE]", error);
     return NextResponse.json({ error: "Generation failed" }, { status: 500 });

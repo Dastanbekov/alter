@@ -41,12 +41,19 @@ Remember: your only job is to guide the user to fill out ONE questionnaire and t
       })),
     ];
 
-    const response = await openai.chat.completions.create({
-      model: "deepseek-chat",
-      messages: openAiMessages as any,
-    });
+    const lastUserMessage = messages.filter((m: any) => m.role === "user").pop();
+    const isQuestionnaireSubmit = lastUserMessage?.content.includes("Goal: ") && lastUserMessage?.content.includes(": ");
 
-    const text = response.choices[0]?.message?.content?.trim() || "";
+    let text = "";
+    if (isQuestionnaireSubmit) {
+      text = "[REQUEST_GENERATE_POSTS]";
+    } else {
+      const response = await openai.chat.completions.create({
+        model: "deepseek-chat",
+        messages: openAiMessages as any,
+      });
+      text = response.choices[0]?.message?.content?.trim() || "";
+    }
 
     let chatTitle = null;
     if (messages.length === 1) {

@@ -204,11 +204,11 @@ export function HeroSection() {
         <div className="w-full max-w-[1100px] bg-white/20 backdrop-blur-[8px] rounded-[40px] border border-white/50 shadow-[0_8px_64px_rgba(255,255,255,0.2)] overflow-hidden flex flex-col lg:flex-row lg:items-stretch">
 
           {/* Phone mockup — LEFT, desktop only */}
-          <div className="hidden lg:flex items-end justify-center bg-white/10 lg:w-[380px] shrink-0 pt-10 px-10">
+          <div className="hidden lg:flex items-end justify-center bg-white/10 lg:w-[380px] shrink-0 pt-4 px-8">
             <img
               src="/hero-mockup.png"
               alt="Alter Mobile Mockup"
-              className="w-full max-w-[260px] h-auto object-contain drop-shadow-[0_24px_60px_rgba(0,0,0,0.2)] hover:scale-105 transition-transform duration-700 ease-out"
+              className="w-full max-w-[290px] h-auto object-contain drop-shadow-[0_24px_60px_rgba(0,0,0,0.2)] hover:scale-105 transition-transform duration-700 ease-out"
             />
           </div>
 

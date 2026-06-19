@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { decrypt } from "@/lib/encryption";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 // This endpoint is triggered by Vercel Cron every minute.
 // It finds all posts with status="scheduled" and scheduledAt <= now,
@@ -96,8 +96,70 @@ export async function GET() {
             const err = await liRes.json();
             errorMsg = err.message || "LinkedIn API Error";
           }
+        } else if (post.platform === "x") {
+          let activeToken = token;
+          
+          if (integration.expiresAt && new Date(integration.expiresAt).getTime() < Date.now() + 60000) {
+            const refreshTokenEnc = metadata.refreshToken;
+            if (refreshTokenEnc) {
+              const refreshToken = decrypt(refreshTokenEnc);
+              const clientId = process.env.X_CLIENT_ID;
+              const clientSecret = process.env.X_CLIENT_SECRET;
+              const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+              
+              const refreshRes = await fetch("https://api.twitter.com/2/oauth2/token", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+                  Authorization: `Basic ${basicAuth}`,
+                },
+                body: new URLSearchParams({
+                  grant_type: "refresh_token",
+                  refresh_token: refreshToken,
+                  client_id: clientId as string,
+                }),
+              });
+              
+              if (refreshRes.ok) {
+                const data = await refreshRes.json();
+                activeToken = data.access_token;
+                
+                const expiresAt = new Date();
+                expiresAt.setSeconds(expiresAt.getSeconds() + (data.expires_in || 7200));
+                
+                metadata.refreshToken = encrypt(data.refresh_token);
+                
+                await prisma.integration.update({
+                  where: { id: integration.id },
+                  data: {
+                    accessToken: encrypt(activeToken),
+                    expiresAt,
+                    metadata: JSON.stringify(metadata)
+                  }
+                });
+              } else {
+                console.error("X token refresh failed:", await refreshRes.text());
+              }
+            }
+          }
+
+          const xRes = await fetch("https://api.twitter.com/2/tweets", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${activeToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              text: post.content,
+            }),
+          });
+          
+          if (xRes.ok) success = true;
+          else {
+            const err = await xRes.json();
+            errorMsg = err.detail || "X API Error";
+          }
         }
-        // X publishing can be added here when OAuth is available
       } catch (e) {
         errorMsg = "Network error during publish";
         console.error(`[CRON_PUBLISH] ${post.platform} error:`, e);

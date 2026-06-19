@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { decrypt } from "@/lib/encryption";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 // POST /api/posts - save and optionally publish/schedule a post
 export async function POST(req: NextRequest) {
@@ -153,6 +153,71 @@ export async function POST(req: NextRequest) {
               const err = await liRes.json();
               errorMsg = err.message || "LinkedIn API Error";
               console.error("LinkedIn API Error:", err);
+            }
+          } else if (platform === "x") {
+            let activeToken = token;
+            
+            // Check expiration (refresh if expired or expires in < 1 minute)
+            if (integration.expiresAt && new Date(integration.expiresAt).getTime() < Date.now() + 60000) {
+              const refreshTokenEnc = metadata.refreshToken;
+              if (refreshTokenEnc) {
+                const refreshToken = decrypt(refreshTokenEnc);
+                const clientId = process.env.X_CLIENT_ID;
+                const clientSecret = process.env.X_CLIENT_SECRET;
+                const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+                
+                const refreshRes = await fetch("https://api.twitter.com/2/oauth2/token", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    Authorization: `Basic ${basicAuth}`,
+                  },
+                  body: new URLSearchParams({
+                    grant_type: "refresh_token",
+                    refresh_token: refreshToken,
+                    client_id: clientId as string,
+                  }),
+                });
+                
+                if (refreshRes.ok) {
+                  const data = await refreshRes.json();
+                  activeToken = data.access_token;
+                  
+                  const expiresAt = new Date();
+                  expiresAt.setSeconds(expiresAt.getSeconds() + (data.expires_in || 7200));
+                  
+                  metadata.refreshToken = encrypt(data.refresh_token);
+                  
+                  await prisma.integration.update({
+                    where: { id: integration.id },
+                    data: {
+                      accessToken: encrypt(activeToken),
+                      expiresAt,
+                      metadata: JSON.stringify(metadata)
+                    }
+                  });
+                } else {
+                  console.error("X token refresh failed:", await refreshRes.text());
+                }
+              }
+            }
+
+            const xRes = await fetch("https://api.twitter.com/2/tweets", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${activeToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                text: content,
+              }),
+            });
+            
+            if (xRes.ok) success = true;
+            else {
+              const err = await xRes.json();
+              errorMsg = err.detail || "X API Error";
+              console.error("X API Error:", err);
             }
           }
 

@@ -8,7 +8,7 @@ import type { Workspace } from "@/types";
 interface Integration {
   id: string;
   platform: string;
-  metadata: { channelUsername?: string; botUsername?: string; screenName?: string; name?: string } | null;
+  metadata: { channelUsername?: string; botUsername?: string; screenName?: string; username?: string; name?: string } | null;
   toneOfVoice?: string | null;
   createdAt: string;
 }
@@ -235,12 +235,12 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateNam
                 color="#e7e9ea"
                 description="Connect your X account to post tweets directly"
                 connected={!!xIntegration}
-                connectedLabel={xIntegration?.metadata?.screenName ? `@${xIntegration.metadata.screenName}` : "Connected"}
+                connectedLabel={xIntegration?.metadata?.username ? `@${xIntegration.metadata.username}` : "Connected"}
                 onConnect={() => {
-                  toast("X OAuth coming soon! Add your API keys in .env", { icon: "ℹ️" });
+                  window.location.href = `/api/integrations/x?workspaceId=${workspace.id}`;
                 }}
                 onDisconnect={() => handleDeleteIntegration("x")}
-                comingSoon={true}
+                comingSoon={false}
               />
 
               {/* LinkedIn */}

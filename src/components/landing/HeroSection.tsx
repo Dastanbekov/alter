@@ -158,8 +158,6 @@ const heroIcons: HeroIconData[] = [
   { id: 8, icon: IconWhatsApp, className: "top-[42%] left-[3%]" },
   { id: 9, icon: IconReddit, className: "top-[65%] right-[22%]" },
   { id: 10, icon: IconPinterest, className: "top-[88%] left-[65%]" },
-  { id: 11, icon: IconX, className: "top-[50%] right-[4%]" },
-  { id: 12, icon: IconLinkedIn, className: "top-[38%] right-[20%]" },
 ];
 
 export function HeroSection() {
@@ -182,7 +180,7 @@ export function HeroSection() {
     >
       {/* Dithering shader background */}
       <Suspense fallback={null}>
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-30 mix-blend-multiply">
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-20 mix-blend-multiply">
           <Dithering
             colorBack="#00000000"
             colorFront="#1a7352"
@@ -205,7 +203,7 @@ export function HeroSection() {
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch min-h-screen">
         {/* Text column */}
         <div className="flex items-center justify-center w-full lg:w-7/12 lg:order-2 pt-[100px] pb-10 px-6 sm:px-10 lg:pt-[120px] lg:pb-[60px] lg:px-8">
-          <div className="max-w-xl">
+          <div className="max-w-xl bg-white/60 backdrop-blur-[6px] rounded-[28px] px-7 py-8 sm:px-10 sm:py-10 border border-white/80 shadow-[0_4px_32px_rgba(255,255,255,0.4)]">
             <h1 className="font-['Outfit'] text-[clamp(36px,8vw,68px)] font-extrabold leading-[1.1] text-[#1a1a1a] mb-6">
               Publish everywhere.{" "}
               <span className="bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-transparent bg-clip-text">
@@ -243,9 +241,6 @@ export function HeroSection() {
                     <Icon width={20} height={20} />
                   </div>
                 ))}
-                <div className="w-9 h-9 bg-[#1a7352] rounded-[10px] flex items-center justify-center text-white text-[11px] font-extrabold shrink-0">
-                  +5
-                </div>
               </div>
             </div>
           </div>

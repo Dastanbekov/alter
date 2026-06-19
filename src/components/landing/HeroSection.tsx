@@ -203,7 +203,7 @@ export function HeroSection() {
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch min-h-screen">
         {/* Text column */}
         <div className="flex items-center justify-center w-full lg:w-7/12 lg:order-2 pt-[100px] pb-10 px-6 sm:px-10 lg:pt-[120px] lg:pb-[60px] lg:px-8">
-          <div className="max-w-xl bg-white/60 backdrop-blur-[6px] rounded-[28px] px-7 py-8 sm:px-10 sm:py-10 border border-white/80 shadow-[0_4px_32px_rgba(255,255,255,0.4)]">
+          <div className="max-w-xl bg-white/25 backdrop-blur-[4px] rounded-[28px] px-7 py-8 sm:px-10 sm:py-10 border border-white/40 shadow-[0_4px_32px_rgba(255,255,255,0.15)]">
             <h1 className="font-['Outfit'] text-[clamp(36px,8vw,68px)] font-extrabold leading-[1.1] text-[#1a1a1a] mb-6">
               Publish everywhere.{" "}
               <span className="bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-transparent bg-clip-text">

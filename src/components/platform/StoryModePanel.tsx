@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight, CheckCircle, RotateCcw } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Story, StoryNode, Workspace, SocialPlatform } from "@/types";

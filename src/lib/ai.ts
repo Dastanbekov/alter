@@ -104,9 +104,12 @@ Structure:
         parsed = { content: text, imageRecommendations: [] };
       }
 
+      let content = parsed.content || text;
+      content = content.replace(/[—–]/g, "-");
+      
       results.push({ 
         platform: item.platform, 
-        content: parsed.content || text,
+        content,
         imageRecommendations: parsed.imageRecommendations || []
       });
     } catch (error) {

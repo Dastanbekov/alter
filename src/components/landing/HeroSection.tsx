@@ -199,23 +199,33 @@ export function HeroSection() {
         ))}
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch min-h-screen">
-        {/* Text column */}
-        <div className="flex items-center justify-center w-full lg:w-7/12 lg:order-2 pt-[100px] pb-10 px-6 sm:px-10 lg:pt-[120px] lg:pb-[60px] lg:px-8">
-          <div className="max-w-xl bg-white/25 backdrop-blur-[4px] rounded-[28px] px-7 py-8 sm:px-10 sm:py-10 border border-white/40 shadow-[0_4px_32px_rgba(255,255,255,0.15)]">
-            <h1 className="font-['Outfit'] text-[clamp(36px,8vw,68px)] font-extrabold leading-[1.1] text-[#1a1a1a] mb-6">
+      {/* Content — one big glassmorphism card */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 sm:px-6 py-[80px]">
+        <div className="w-full max-w-[1100px] bg-white/20 backdrop-blur-[8px] rounded-[40px] border border-white/50 shadow-[0_8px_64px_rgba(255,255,255,0.2)] flex flex-col lg:flex-row lg:items-center overflow-hidden">
+
+          {/* Phone mockup column — LEFT */}
+          <div className="flex items-end justify-center px-8 pb-0 pt-8 lg:pt-0 lg:pl-12 lg:w-[380px] shrink-0 order-first">
+            <img
+              src="/hero-mockup.png"
+              alt="Alter Mobile Mockup"
+              className="w-full max-w-[220px] lg:max-w-[280px] h-auto object-contain drop-shadow-[0_32px_64px_rgba(0,0,0,0.18)] hover:scale-105 transition-transform duration-700 ease-out"
+            />
+          </div>
+
+          {/* Text column — RIGHT */}
+          <div className="flex-1 px-8 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-12">
+            <h1 className="font-['Outfit'] text-[clamp(32px,4.5vw,62px)] font-extrabold leading-[1.1] text-[#1a1a1a] mb-5">
               Publish everywhere.{" "}
               <span className="bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-transparent bg-clip-text">
                 Effortlessly.
               </span>
             </h1>
 
-            <p className="text-[16px] sm:text-[18px] text-[#4a5568] leading-[1.6] sm:leading-[1.75] mb-8 sm:mb-10">
+            <p className="text-[15px] sm:text-[17px] text-[#4a5568] leading-[1.6] sm:leading-[1.75] mb-7 sm:mb-8">
               Just tell Alter what happened. Our AI crafts perfect posts for LinkedIn, X, Telegram, Instagram and more — then schedules them automatically. One message, every platform.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-12">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-10">
               <a
                 href="/register"
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#1a7352] hover:bg-[#155f43] text-white rounded-lg text-[15px] font-bold no-underline transition-all duration-200 shadow-[0_4px_20px_rgba(26,115,82,0.3)] w-full sm:w-auto"
@@ -230,13 +240,13 @@ export function HeroSection() {
               </a>
             </div>
 
-            <div className="pt-8 border-t-2 border-[rgba(26,26,26,0.12)] flex items-center justify-between flex-wrap gap-4">
+            <div className="pt-6 border-t-2 border-[rgba(26,26,26,0.12)] flex items-center justify-between flex-wrap gap-4">
               <p className="font-bold text-[15px] text-[#1a1a1a]">Supported platforms</p>
               <div className="flex gap-2.5 flex-wrap">
                 {[IconX, IconLinkedIn, IconTelegram, IconInstagram, IconFacebook].map((Icon, i) => (
                   <div
                     key={i}
-                    className="w-9 h-9 bg-white rounded-[10px] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] shrink-0"
+                    className="w-9 h-9 bg-white/80 rounded-[10px] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] shrink-0"
                   >
                     <Icon width={20} height={20} />
                   </div>
@@ -244,16 +254,7 @@ export function HeroSection() {
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="relative w-full lg:w-5/12 lg:order-1 flex items-center justify-center pb-12 pt-6 lg:py-0 overflow-hidden">
-          <div className="relative w-full max-w-[280px] lg:max-w-[340px] flex items-center justify-center hover:scale-105 transition-transform duration-700 ease-out lg:translate-x-6">
-            <img 
-              src="/hero-mockup.png" 
-              alt="Alter Mobile Mockup" 
-              className="w-full h-auto object-contain drop-shadow-[0_32px_64px_rgba(0,0,0,0.15)]"
-            />
-          </div>
         </div>
       </div>
     </section>

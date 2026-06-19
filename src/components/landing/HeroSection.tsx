@@ -201,20 +201,11 @@ export function HeroSection() {
 
       {/* Content — one big glassmorphism card */}
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4 sm:px-6 py-[80px]">
-        <div className="w-full max-w-[1100px] bg-white/20 backdrop-blur-[8px] rounded-[40px] border border-white/50 shadow-[0_8px_64px_rgba(255,255,255,0.2)] flex flex-col lg:flex-row lg:items-center overflow-hidden">
+        <div className="w-full max-w-[860px] bg-white/20 backdrop-blur-[8px] rounded-[40px] border border-white/50 shadow-[0_8px_64px_rgba(255,255,255,0.2)] overflow-hidden">
 
-          {/* Phone mockup column — LEFT */}
-          <div className="flex items-end justify-center px-8 pb-0 pt-8 lg:pt-0 lg:pl-12 lg:w-[380px] shrink-0 order-first">
-            <img
-              src="/hero-mockup.png"
-              alt="Alter Mobile Mockup"
-              className="w-full max-w-[220px] lg:max-w-[280px] h-auto object-contain drop-shadow-[0_32px_64px_rgba(0,0,0,0.18)] hover:scale-105 transition-transform duration-700 ease-out"
-            />
-          </div>
-
-          {/* Text column — RIGHT */}
-          <div className="flex-1 px-8 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-12">
-            <h1 className="font-['Outfit'] text-[clamp(32px,4.5vw,62px)] font-extrabold leading-[1.1] text-[#1a1a1a] mb-5">
+          {/* Text content */}
+          <div className="px-10 py-12 sm:px-16 sm:py-16 lg:px-20 lg:py-20">
+            <h1 className="font-['Outfit'] text-[clamp(36px,5vw,68px)] font-extrabold leading-[1.1] text-[#1a1a1a] mb-6">
               Publish everywhere.{" "}
               <span className="bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-transparent bg-clip-text">
                 Effortlessly.

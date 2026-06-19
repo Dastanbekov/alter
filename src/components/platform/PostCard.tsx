@@ -261,13 +261,24 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
               Schedule
             </button>
             <button
-              onClick={handlePublish}
+              onClick={() => {
+                if (!isConnected) {
+                  toast.error(`Please connect ${platform.label} first in Settings`);
+                  return;
+                }
+                handlePublish();
+              }}
               disabled={publishing || !!overLimit}
               className="btn btn-primary btn-sm"
               style={{
-                background: `linear-gradient(135deg, ${platform.color}, ${platform.color}cc)`,
-                boxShadow: `0 4px 12px ${platform.color}40`,
+                background: !isConnected 
+                  ? "var(--surface-3)" 
+                  : `linear-gradient(135deg, ${platform.color}, ${platform.color}cc)`,
+                boxShadow: !isConnected ? "none" : `0 4px 12px ${platform.color}40`,
+                color: !isConnected ? "var(--text-muted)" : "white",
+                cursor: !isConnected ? "not-allowed" : "pointer"
               }}
+              title={!isConnected ? `Connect ${platform.label} in Settings to publish` : ""}
             >
               {publishing ? (
                 <div className="spinner w-3.5 h-3.5" />

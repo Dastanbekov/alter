@@ -139,7 +139,9 @@ Return ONLY valid JSON in this exact format:
       "day": 1,
       "scheduledAt": "2024-06-20T09:00:00.000Z",
       "platform": "linkedin",
-      "content": "Full post content here...",
+      "_draft": "Write the initial raw draft here",
+      "_critique": "Critique your own draft. Point out clichés, weak hooks, or missing formatting. Suggest improvements.",
+      "content": "Full, polished post content here based on the critique. DO NOT INCLUDE PLACEHOLDERS. MUST STRICTLY FOLLOW PLATFORM RULES.",
       "imageRecommendations": [
         "Description of an image the user should attach (e.g., 'A sleek screenshot of the new dashboard'). Provide 0, 1, or more suggestions depending on what is optimal for this post."
       ]

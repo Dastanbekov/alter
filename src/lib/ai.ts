@@ -79,7 +79,9 @@ FORMATTING STRICT RULES:
 Write your response in STRICT JSON format. Ensure the JSON is valid and can be parsed.
 Structure:
 {
-  "content": "The actual post text.",
+  "_draft": "Write your initial raw draft here",
+  "_critique": "Critique your own draft. Point out clichés, weak hooks, or missing formatting. Suggest improvements.",
+  "content": "The actual post text, polished and improved based on your critique. MUST STRICTLY FOLLOW PLATFORM RULES.",
   "imageRecommendations": [
     "Description of an image the user should attach (e.g., 'A sleek screenshot of the new dashboard'). Provide 0, 1, or more suggestions depending on what is optimal for this post."
   ]

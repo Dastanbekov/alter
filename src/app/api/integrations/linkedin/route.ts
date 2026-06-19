@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
   authUrl.searchParams.set("client_id", clientId);
   authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set("state", encodedState);
-  authUrl.searchParams.set("scope", "w_member_social r_member_social openid profile email");
+  authUrl.searchParams.set("scope", "w_member_social openid profile email");
 
   return NextResponse.redirect(authUrl.toString());
 }

@@ -118,7 +118,8 @@ export function Sidebar({
                 height: "100%", 
                 width: collapsed ? "auto" : "100%", 
                 objectFit: collapsed ? "cover" : "contain", 
-                objectPosition: "left" 
+                objectPosition: "left",
+                filter: "brightness(0)"
               }} 
             />
           </div>

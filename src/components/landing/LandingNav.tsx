@@ -32,7 +32,7 @@ export function LandingNav() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 no-underline">
             <div className="h-10 sm:h-14 flex items-center justify-center">
-              <img src="/logo.png" alt="Alter Logo" className="h-full w-auto object-contain" />
+              <img src="/logo.png" alt="Alter Logo" className="h-full w-auto object-contain" style={{ filter: "brightness(0)" }} />
             </div>
           </Link>
 

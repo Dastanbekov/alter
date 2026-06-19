@@ -47,7 +47,7 @@ export default function OnboardingPage() {
       {/* Header */}
       <div className="flex items-center gap-[10px] mb-8 sm:mb-12 relative z-10">
         <div className="h-12 sm:h-16 flex items-center justify-center">
-          <img src="/logo.png" alt="Alter Logo" style={{ height: "100%", width: "auto", objectFit: "contain" }} />
+          <img src="/logo.png" alt="Alter Logo" style={{ height: "100%", width: "auto", objectFit: "contain", filter: "brightness(0)" }} />
         </div>
       </div>
 

@@ -49,7 +49,7 @@ export default function LoginPage() {
         <div className="flex justify-center mb-8 sm:mb-10">
           <Link href="/" className="flex items-center gap-2 no-underline">
             <div className="h-12 sm:h-16 flex items-center justify-center">
-              <img src="/logo.png" alt="Alter Logo" style={{ height: "100%", width: "auto", objectFit: "contain" }} />
+              <img src="/logo.png" alt="Alter Logo" style={{ height: "100%", width: "auto", objectFit: "contain", filter: "brightness(0)" }} />
             </div>
           </Link>
         </div>

@@ -12,7 +12,7 @@ export function FooterSection() {
           <div className="flex flex-col">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="h-10 sm:h-12 flex items-center justify-center">
-                <img src="/logo.png" alt="Alter Logo" className="h-full w-auto object-contain brightness-[100]" />
+                <img src="/logo.png" alt="Alter Logo" className="h-full w-auto object-contain" style={{ filter: "brightness(0)" }} />
               </div>
             </div>
             <p className="text-[14px] text-[#9ca3af] leading-[1.7] max-w-[280px] mb-5">

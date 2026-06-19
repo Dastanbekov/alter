@@ -39,7 +39,7 @@ export default function SettingsPage() {
               justifyContent: "center",
             }}
           >
-            <img src="/logo.png" alt="Alter Logo" style={{ height: "100%", width: "auto", objectFit: "contain" }} />
+            <img src="/logo.png" alt="Alter Logo" style={{ height: "100%", width: "auto", objectFit: "contain", filter: "brightness(0)" }} />
           </div>
         </div>
         <div style={{ flex: 1 }} />

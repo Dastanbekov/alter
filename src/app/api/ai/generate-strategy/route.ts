@@ -2,13 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { generateObject } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
+import { deepseek } from "@ai-sdk/deepseek";
 import { z } from "zod";
-
-const deepseek = createOpenAI({
-  baseURL: "https://api.deepseek.com/v1",
-  apiKey: process.env.DEEPSEEK_API_KEY,
-});
 
 export const maxDuration = 60; // Allow more time for generation
 

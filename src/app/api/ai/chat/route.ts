@@ -26,6 +26,7 @@ EVALUATION LOGIC:
 1. Review the conversation history.
 2. If the user's input lacks basic context (e.g., they just said "my project is Alter" but didn't explain what Alter actually does, or said "write a post" without specifying the topic), this is NOT enough information. You MUST ask them for details. To do so, output a questionnaire in EXACTLY this JSON format on a new line:
 [QUESTIONNAIRE: [{"id": "q1", "label": "What does your project do?"}, {"id": "q2", "label": "What is the key message of the post?"}]]
+Make sure to include the closing ]] at the end!
 3. If the user has provided enough information to write decent posts (they explained what the product/project does AND what the post is about), or if they have ALREADY answered a previous questionnaire, you MUST output EXACTLY the following text and nothing else:
 [REQUEST_GENERATE_POSTS]
 

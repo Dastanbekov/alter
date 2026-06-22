@@ -263,11 +263,32 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade, i
       let responseContent = data.text;
       let questionnaireData: Question[] | undefined;
 
-      const qMatch = responseContent.match(/\[QUESTIONNAIRE:\s*(\[[\s\S]*?\])\]/);
+      let qMatch = responseContent.match(/\[QUESTIONNAIRE:\s*(\[[\s\S]*?\])\]/);
+      if (!qMatch) {
+        // Fallback for malformed AI output (missing outer bracket) or new format
+        qMatch = responseContent.match(/QUESTIONNAIRE(?:_JSON)?:\s*(\[[\s\S]*\])/);
+      }
+
       if (qMatch) {
         try {
-          questionnaireData = JSON.parse(qMatch[1]);
-          responseContent = responseContent.replace(qMatch[0], "").trim();
+          const jsonString = qMatch[1];
+          const firstBracket = jsonString.indexOf('[');
+          const lastBracket = jsonString.lastIndexOf(']');
+          if (firstBracket !== -1 && lastBracket !== -1) {
+            const cleanJson = jsonString.substring(firstBracket, lastBracket + 1);
+            questionnaireData = JSON.parse(cleanJson);
+            // Remove the matched tag from the display text
+            const fullMatchIdx = responseContent.indexOf(qMatch[0]);
+            if (fullMatchIdx !== -1) {
+              responseContent = responseContent.substring(0, fullMatchIdx) + responseContent.substring(fullMatchIdx + qMatch[0].length);
+              responseContent = responseContent.trim();
+              
+              // Remove any stray trailing `]` if the old format missed the outer closing bracket
+              if (responseContent.endsWith("]")) {
+                responseContent = responseContent.slice(0, -1).trim();
+              }
+            }
+          }
         } catch (e) {
           console.error("Failed to parse questionnaire", e);
         }

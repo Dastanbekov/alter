@@ -15,22 +15,6 @@ export function OnboardingStep3({ data, onChange, onNext, onBack }: Props) {
   // Simplified for now - no actual file upload logic, just simple string inputs/displays 
   // corresponding to the mockup
   
-  const handleColorChange = (index: number, newColor: string) => {
-    const newColors = [...(data.colors || [])];
-    newColors[index] = newColor;
-    onChange({ colors: newColors });
-  };
-
-  const handleAddColor = () => {
-    onChange({ colors: [...(data.colors || []), "#000000"] });
-  };
-
-  const handleRemoveColor = (index: number) => {
-    const newColors = [...(data.colors || [])];
-    newColors.splice(index, 1);
-    onChange({ colors: newColors });
-  };
-
   return (
     <div className="glass rounded-[20px] p-6 sm:p-10">
       <div className="mb-8 border-b border-[var(--border)] pb-6">
@@ -38,44 +22,11 @@ export function OnboardingStep3({ data, onChange, onNext, onBack }: Props) {
           Here's your brand
         </h2>
         <p className="text-[14px] sm:text-[15px] text-[var(--text-secondary)]">
-          We picked up your colors, and the way you talk. Tweak anything that looks or sounds off, so your posts stay on brand.
+          We picked up your brand style, and the way you talk. Tweak anything that looks or sounds off, so your posts stay on brand.
         </p>
       </div>
 
       <div className="flex flex-col gap-8 mb-8">
-        
-        {/* Colors */}
-        <div>
-          <label className="block text-[15px] font-semibold text-[var(--text-primary)] mb-3">
-            Colors
-          </label>
-          <div className="flex flex-wrap gap-3">
-            {(data.colors || []).map((color, i) => (
-              <div key={i} className="flex items-center gap-2 bg-[var(--surface-1)] border border-[var(--border)] rounded-[8px] p-1.5 pr-3 relative group">
-                <input
-                  type="color"
-                  value={color.startsWith('#') ? color : '#000000'}
-                  onChange={(e) => handleColorChange(i, e.target.value)}
-                  className="w-8 h-8 rounded cursor-pointer border-none p-0"
-                />
-                <span className="text-[13px] font-medium uppercase">{color}</span>
-                <button
-                  onClick={() => handleRemoveColor(i)}
-                  className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            ))}
-            <button
-              onClick={handleAddColor}
-              className="w-11 h-11 rounded-[8px] border border-dashed border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--surface-2)] transition-colors"
-            >
-              +
-            </button>
-          </div>
-        </div>
-
         {/* Fonts */}
         <div>
           <label className="block text-[15px] font-semibold text-[var(--text-primary)] mb-3">

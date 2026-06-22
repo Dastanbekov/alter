@@ -17,11 +17,9 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
   const [content, setContent] = useState(post.content);
   const [publishing, setPublishing] = useState(false);
   const [published, setPublished] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [mediaList, setMediaList] = useState<string[]>(post.mediaUrls || []);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
-  const [base64ImagesForSchedule, setBase64ImagesForSchedule] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -35,13 +33,6 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
     return text.slice(0, 210);
   };
 
-  useEffect(() => {
-    // Cleanup preview URLs on unmount
-    return () => {
-      previewUrls.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [previewUrls]);
-
   // Auto-resize textarea
   useEffect(() => {
     const el = textareaRef.current;
@@ -53,24 +44,19 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      const newUrls = newFiles.map((file) => URL.createObjectURL(file));
-      const updatedFiles = [...files, ...newFiles];
-      setFiles(updatedFiles);
-      setPreviewUrls((prev) => [...prev, ...newUrls]);
+      const newB64s = await Promise.all(newFiles.map(f => getBase64(f)));
+      const updatedMedia = [...mediaList, ...newB64s];
+      setMediaList(updatedMedia);
 
-      const b64Images = await Promise.all(updatedFiles.map(f => getBase64(f)));
-      onUpdate(content, b64Images);
+      onUpdate(content, updatedMedia);
     }
   };
 
   const removeImage = async (index: number) => {
-    URL.revokeObjectURL(previewUrls[index]);
-    const updatedFiles = files.filter((_, i) => i !== index);
-    setFiles(updatedFiles);
-    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+    const updatedMedia = mediaList.filter((_, i) => i !== index);
+    setMediaList(updatedMedia);
 
-    const b64Images = await Promise.all(updatedFiles.map(f => getBase64(f)));
-    onUpdate(content, b64Images);
+    onUpdate(content, updatedMedia);
   };
 
   const getBase64 = (file: File): Promise<string> => {
@@ -91,8 +77,6 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
     }
     setPublishing(true);
     try {
-      const base64Images = await Promise.all(files.map(f => getBase64(f)));
-
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -100,7 +84,7 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
           workspaceId: workspace.id,
           platform: "linkedin",
           content,
-          images: base64Images,
+          images: mediaList,
         }),
       });
 
@@ -192,30 +176,32 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
             </div>
 
             {/* LinkedIn Style Image Grid */}
-            {previewUrls.length > 0 && (
+            {mediaList.length > 0 && (
               <div className="w-full relative mt-2 group">
-                <div className={`grid gap-0.5 ${previewUrls.length === 1 ? 'grid-cols-1' : previewUrls.length === 2 ? 'grid-cols-2' : previewUrls.length === 3 ? 'grid-cols-2 grid-rows-2' : 'grid-cols-2 grid-rows-2'}`}>
-                  {previewUrls.slice(0, 4).map((url, i) => (
+                <div className={`grid gap-0.5 ${mediaList.length === 1 ? 'grid-cols-1' : mediaList.length === 2 ? 'grid-cols-2' : mediaList.length === 3 ? 'grid-cols-2 grid-rows-2' : 'grid-cols-2 grid-rows-2'}`}>
+                  {mediaList.slice(0, 4).map((url, i) => (
                     <div 
                       key={i} 
                       className={`relative bg-gray-100 border border-gray-200 overflow-hidden ${
-                        previewUrls.length === 3 && i === 0 ? 'row-span-2' : ''
+                        mediaList.length === 3 && i === 0 ? 'row-span-2' : ''
                       }`}
                     >
                       <img 
-                        src={url} 
+                        src={url.startsWith('data:') || url.startsWith('blob:') ? url : `data:image/jpeg;base64,${url}`}
                         alt="Preview" 
                         className="w-full h-full object-cover max-h-[400px]" 
                       />
-                      <button
-                        onClick={() => removeImage(i)}
-                        className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 cursor-pointer"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                      {previewUrls.length > 4 && i === 3 && (
+                      {!published && (
+                        <button
+                          onClick={() => removeImage(i)}
+                          className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                      {mediaList.length > 4 && i === 3 && (
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-2xl font-semibold">
-                          +{previewUrls.length - 4}
+                          +{mediaList.length - 4}
                         </div>
                       )}
                     </div>
@@ -276,19 +262,11 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
             ) : (
               <>
                 <button
-                  onClick={async () => {
-                    if (!isConnected) {
-                      toast.error(`Please connect LinkedIn first in Settings`);
-                      return;
-                    }
-                    const b64Images = await Promise.all(files.map(f => getBase64(f)));
-                    setBase64ImagesForSchedule(b64Images);
-                    setShowSchedule(true);
-                  }}
-                  className="px-4 py-2 rounded-full border border-gray-500 text-gray-600 font-semibold text-[15px] hover:bg-gray-50 hover:border-gray-700 transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Clock size={16} /> Schedule
-                </button>
+                onClick={() => setShowSchedule(true)}
+                className="flex items-center justify-center gap-2 px-4 py-1.5 rounded-full border border-gray-400 hover:bg-gray-100 hover:border-gray-500 font-semibold text-gray-600 transition-colors"
+              >
+                <Clock size={16} /> Schedule
+              </button>
                 <button
                   onClick={handlePublish}
                   disabled={publishing || !content.trim()}
@@ -304,14 +282,13 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
 
       {showSchedule && (
         <ScheduleModal
-          post={{ ...post, content }}
+          post={{ ...post, content, platform: "linkedin" }}
+          images={mediaList}
           workspace={workspace}
-          images={base64ImagesForSchedule}
           onClose={() => setShowSchedule(false)}
           onScheduled={() => {
             setShowSchedule(false);
             setPublished(true);
-            toast.success(`Scheduled for LinkedIn!`);
             onUpdate(content);
             setTimeout(onClose, 2000);
           }}

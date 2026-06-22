@@ -22,7 +22,7 @@ const PLATFORM_INFO: Record<
   },
   x: {
     label: "X",
-    color: "#e7e9ea",
+    color: "#0f1419",
     icon: (
       <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -127,6 +127,9 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
     ? story.platforms 
     : Array.from(new Set(nodes.map(n => n.platform)));
 
+  // Group nodes by day
+  const days = Array.from(new Set(nodes.map(n => n.day))).sort((a, b) => a - b);
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -192,15 +195,16 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
             </div>
 
             {/* Grid Rows (Sequential Steps) */}
-            {nodes.map((node, idx) => {
-              const date = new Date(node.scheduledAt);
+            {days.map((day, idx) => {
+              const nodesForDay = nodes.filter((n) => n.day === day);
+              const date = new Date(nodesForDay[0].scheduledAt);
               return (
-                <div key={node.id} className="flex gap-4 items-center relative">
+                <div key={day} className="flex gap-4 items-center relative">
                   {/* Step Number Column */}
                   <div className="w-14 h-14 shrink-0 rounded-full bg-[var(--surface-2)] border-2 border-[var(--border)] flex items-center justify-center font-['Outfit'] font-bold text-[20px] text-[var(--text-primary)] shadow-sm z-10 relative">
                     {idx + 1}
                     {/* Vertical connecting line to the next number (except the last one) */}
-                    {idx < nodes.length - 1 && (
+                    {idx < days.length - 1 && (
                       <div className="absolute top-[54px] left-[25px] w-0.5 h-10 bg-[var(--border)] opacity-60" />
                     )}
                   </div>
@@ -208,11 +212,11 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
                   {/* Platform Columns */}
                   {platforms.map((p) => {
                     const platform = PLATFORM_INFO[p] || PLATFORM_INFO.linkedin;
-                    const isTargetPlatform = node.platform === p;
+                    const node = nodesForDay.find((n) => n.platform === p);
 
                     return (
                       <div key={p} className="w-[260px] flex justify-center relative">
-                        {isTargetPlatform ? (
+                        {node ? (
                           <button
                             onClick={() => setOpenNode(node)}
                             className="w-[240px] rounded-[14px] overflow-hidden text-left transition-all duration-200 group relative z-10"
@@ -266,6 +270,12 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
                               <div className="text-[12px] text-[var(--text-secondary)] leading-relaxed line-clamp-3 opacity-70 group-hover:opacity-100 transition-opacity">
                                 {node.content}
                               </div>
+                              {node.mediaUrls && node.mediaUrls.length > 0 && (
+                                <div className="mt-3 text-[11px] flex items-center gap-1.5 font-semibold text-[#1a7352] bg-[#1a7352]/10 w-fit px-2 py-1 rounded-md">
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                  {node.mediaUrls.length} image{node.mediaUrls.length > 1 ? "s" : ""} attached
+                                </div>
+                              )}
                             </div>
 
                             <div

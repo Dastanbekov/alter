@@ -57,42 +57,28 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
   const [published, setPublished] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
 
-  const [files, setFiles] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [base64ImagesForSchedule, setBase64ImagesForSchedule] = useState<string[]>([]);
+  const [mediaList, setMediaList] = useState<string[]>(post.mediaUrls || []);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    return () => {
-      previewUrls.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [previewUrls]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      const newUrls = newFiles.map((file) => URL.createObjectURL(file));
-      const updatedFiles = [...files, ...newFiles];
-      setFiles(updatedFiles);
-      setPreviewUrls((prev) => [...prev, ...newUrls]);
+      const newB64s = await Promise.all(newFiles.map(f => getBase64(f)));
+      const updatedMedia = [...mediaList, ...newB64s];
+      setMediaList(updatedMedia);
 
-      // Provide updated base64 images to parent (useful for Story mode auto-save)
       if (onUpdate) {
-        const b64Images = await Promise.all(updatedFiles.map(f => getBase64(f)));
-        onUpdate(post.content, b64Images);
+        onUpdate(post.content, updatedMedia);
       }
     }
   };
 
   const removeImage = async (index: number) => {
-    URL.revokeObjectURL(previewUrls[index]);
-    const updatedFiles = files.filter((_, i) => i !== index);
-    setFiles(updatedFiles);
-    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+    const updatedMedia = mediaList.filter((_, i) => i !== index);
+    setMediaList(updatedMedia);
 
     if (onUpdate) {
-      const b64Images = await Promise.all(updatedFiles.map(f => getBase64(f)));
-      onUpdate(post.content, b64Images);
+      onUpdate(post.content, updatedMedia);
     }
   };
 
@@ -149,7 +135,6 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
     }
     setPublishing(true);
     try {
-      const base64Images = await Promise.all(files.map(f => getBase64(f)));
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -157,7 +142,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
           workspaceId: workspace.id,
           platform: post.platform,
           content: post.content,
-          images: base64Images,
+          images: mediaList,
         }),
       });
 
@@ -242,14 +227,14 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
                   </p>
 
                   {/* Attached Images (first tweet only) */}
-                  {idx === 0 && (previewUrls.length > 0 || (post.mediaUrls && post.mediaUrls.length > 0)) && (
+                  {idx === 0 && mediaList.length > 0 && (
                     <div className="w-full relative mt-3 group">
-                      <div className={`grid gap-0.5 ${(previewUrls.length || post.mediaUrls?.length || 0) === 1 ? 'grid-cols-1' : (previewUrls.length || post.mediaUrls?.length || 0) === 2 ? 'grid-cols-2' : 'grid-cols-2 grid-rows-2'}`}>
-                        {(previewUrls.length > 0 ? previewUrls : (post.mediaUrls || [])).slice(0, 4).map((url, i) => (
+                      <div className={`grid gap-0.5 ${mediaList.length === 1 ? 'grid-cols-1' : mediaList.length === 2 ? 'grid-cols-2' : 'grid-cols-2 grid-rows-2'}`}>
+                        {mediaList.slice(0, 4).map((url, i) => (
                           <div 
                             key={i} 
                             className={`relative bg-[var(--surface-3)] border border-[var(--border)] overflow-hidden rounded-md ${
-                              (previewUrls.length || post.mediaUrls?.length || 0) === 3 && i === 0 ? 'row-span-2' : ''
+                              mediaList.length === 3 && i === 0 ? 'row-span-2' : ''
                             }`}
                           >
                             <img 
@@ -257,7 +242,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
                               alt="Preview" 
                               className="w-full h-full object-cover max-h-[200px]" 
                             />
-                            {!published && previewUrls.length > 0 && (
+                            {!published && (
                               <button
                                 onClick={() => removeImage(i)}
                                 className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 cursor-pointer"
@@ -320,14 +305,14 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
             </p>
 
             {/* Attached Images */}
-            {(previewUrls.length > 0 || (post.mediaUrls && post.mediaUrls.length > 0)) && (
+            {mediaList.length > 0 && (
               <div className="w-full relative mt-3 group">
-                <div className={`grid gap-0.5 rounded-md overflow-hidden ${(previewUrls.length || post.mediaUrls?.length || 0) === 1 ? 'grid-cols-1' : (previewUrls.length || post.mediaUrls?.length || 0) === 2 ? 'grid-cols-2' : 'grid-cols-2 grid-rows-2'}`}>
-                  {(previewUrls.length > 0 ? previewUrls : (post.mediaUrls || [])).slice(0, 4).map((url, i) => (
+                <div className={`grid gap-0.5 rounded-md overflow-hidden ${mediaList.length === 1 ? 'grid-cols-1' : mediaList.length === 2 ? 'grid-cols-2' : 'grid-cols-2 grid-rows-2'}`}>
+                  {mediaList.slice(0, 4).map((url, i) => (
                     <div 
                       key={i} 
                       className={`relative bg-[var(--surface-3)] border border-[var(--border)] ${
-                        (previewUrls.length || post.mediaUrls?.length || 0) === 3 && i === 0 ? 'row-span-2' : ''
+                        mediaList.length === 3 && i === 0 ? 'row-span-2' : ''
                       }`}
                     >
                       <img 
@@ -335,7 +320,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
                         alt="Preview" 
                         className="w-full h-full object-cover max-h-[300px]" 
                       />
-                      {!published && previewUrls.length > 0 && (
+                      {!published && (
                         <button
                           onClick={() => removeImage(i)}
                           className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 cursor-pointer"
@@ -440,15 +425,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
             </div>
             <div className="flex gap-2.5">
               <button
-                onClick={async () => {
-                  if (!isConnected) {
-                    toast.error(`Please connect ${platform.label} first in Settings`);
-                    return;
-                  }
-                  const b64Images = await Promise.all(files.map(f => getBase64(f)));
-                  setBase64ImagesForSchedule(b64Images);
-                  setShowSchedule(true);
-                }}
+                onClick={() => setShowSchedule(true)}
                 className="btn btn-secondary btn-sm"
               >
                 <Clock size={14} />
@@ -501,8 +478,8 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
       {showSchedule && (
         <ScheduleModal
           post={post}
+          images={mediaList}
           workspace={workspace}
-          images={base64ImagesForSchedule}
           onClose={() => setShowSchedule(false)}
           onScheduled={() => {
             setShowSchedule(false);

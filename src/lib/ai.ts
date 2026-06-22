@@ -37,7 +37,8 @@ This is the third tweet.
   
   linkedin: `Write a LinkedIn post. STRICT RULES:
 - ZERO hashtags. Do NOT use any hashtags.
-- The first 150 characters are the hook (before the "See more" button) - they MUST be extremely engaging or the post will fail.
+- Structure your post logically: 1) Engaging Hook. 2) The Problem or Context. 3) The Solution, Insight or News. 4) A clear Conclusion or Call to Action.
+- FORMATTING: Use frequent blank lines between sentences. Break up paragraphs to make it highly scannable (classic LinkedIn style).
 - Authentic, grounded tone. AVOID cliché LinkedIn tropes (no "I am thrilled to announce", no fake inspirational fluff). Be direct and realistic. Speak like a real founder talking to peers.
 - DO NOT hallucinate fake backstories, fake past failures, or fake statistics. Stick ONLY to the facts provided in the context.
 - Adapt the length to the context provided. Do NOT artificially pad the post to make it longer. If the context is brief, keep the post concise and to the point.
@@ -74,8 +75,7 @@ ${platformInstructions}${tovInstruction}
 FORMATTING STRICT RULES:
 - INTERNAL RULE: NEVER use long dashes/em-dashes ("—" or "–"). You MUST use ONLY short hyphens ("-") everywhere.
 - DO NOT use markdown bold formatting (no **text**).
-- DO NOT break every single sentence into a new paragraph. Group text logically into cohesive paragraphs.
-- The Hook (first sentence) should be separated by a blank line, but keep the rest of the text grouped by meaning to avoid excessive spacing.
+- Format the post cleanly with proper line breaks depending on platform conventions.
 
 Write your response in STRICT JSON format. Ensure the JSON is valid and can be parsed.
 Structure:

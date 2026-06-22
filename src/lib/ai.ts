@@ -65,7 +65,10 @@ export async function generatePostsForPlatforms(
       ? `\n\nCRITICAL - TONE OF VOICE TO EMULATE:\n${item.toneOfVoice}\nYou MUST write the post exactly matching this tone of voice and style.`
       : "";
 
-    const prompt = `You are a social media content expert writing for ${item.workspacePurpose === "blog" ? `a personal blog by "${item.workspaceDetails}"` : `a project called "${item.workspaceDetails}"`}.
+    const prompt = `You are a social media content expert writing for a ${item.workspacePurpose === "blog" ? "personal blog" : "project"}.
+
+BRAND CONTEXT:
+${item.workspaceDetails}
 
 The user wants to post about:
 "${item.context}"

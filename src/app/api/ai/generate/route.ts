@@ -85,12 +85,23 @@ export async function POST(req: NextRequest) {
     // Generate posts
     const inputs = platforms.map((platform: string) => {
       const integration = integrations.find((i) => i.platform === platform);
+      
+      // Construct a rich details string using all available workspace data
+      const richDetails = [
+        workspace.details || workspace.name,
+        workspace.website ? `Website: ${workspace.website}` : "",
+        workspace.services && workspace.services.length > 0 ? `Services/Products: ${workspace.services.join(", ")}` : "",
+        workspace.targetAudience ? `Target Audience: ${workspace.targetAudience}` : "",
+        workspace.brandStyle && workspace.brandStyle.length > 0 ? `Brand Style: ${workspace.brandStyle.join(", ")}` : "",
+        workspace.angle ? `Marketing Angle: ${workspace.angle}` : "",
+      ].filter(Boolean).join("\n");
+
       return {
         platform: platform as SocialPlatform,
         context: context.trim(),
         workspacePurpose: workspace.purpose,
-        workspaceDetails: workspace.details || workspace.name,
-        toneOfVoice: integration?.toneOfVoice || undefined,
+        workspaceDetails: richDetails,
+        toneOfVoice: integration?.toneOfVoice || workspace.toneOfVoice || undefined,
       };
     });
 

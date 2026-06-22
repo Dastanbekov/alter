@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, ArrowLeft, BookOpen, Zap, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, BookOpen, Zap, Check, X } from "lucide-react";
 import type { SocialPlatform } from "@/types";
 
 type Phase = "choose" | "prompt" | "questions" | "platforms" | "generating" | "done";
@@ -159,7 +159,13 @@ export function DashboardOnboarding({ workspaceId, workspaceName, onComplete }: 
     >
       <div className="bg-white rounded-[24px] shadow-[0_24px_80px_rgba(0,0,0,0.25)] w-full max-w-[520px] overflow-hidden">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-[var(--border)]">
+        <div className="px-6 pt-6 pb-4 border-b border-[var(--border)] relative">
+          <button 
+            onClick={() => onComplete()}
+            className="absolute top-4 right-4 p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-2)] rounded-full transition-colors"
+          >
+            <X size={20} />
+          </button>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-6 h-6 bg-[rgba(26,115,82,0.1)] rounded-full flex items-center justify-center">
               <Zap size={12} color="#1a7352" />

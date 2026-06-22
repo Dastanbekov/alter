@@ -79,8 +79,18 @@ export function DashboardLayout() {
     }
   }, [loading, billingInfo]);
 
-  const handleTourComplete = () => {
-    setTourPhase("onboarding");
+  const handleTourComplete = async (skipped?: boolean) => {
+    if (skipped) {
+      setTourPhase("done");
+      try {
+        await fetch("/api/user/complete-tour", { method: "PATCH" });
+      } catch (e) {
+        console.error(e);
+      }
+      fetchBilling();
+    } else {
+      setTourPhase("onboarding");
+    }
   };
 
   const handleOnboardingComplete = async (data?: { context: string; posts?: any[]; story?: any }) => {

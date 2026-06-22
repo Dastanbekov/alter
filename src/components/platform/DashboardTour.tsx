@@ -46,7 +46,7 @@ interface Rect {
 }
 
 interface Props {
-  onComplete: () => void;
+  onComplete: (skipped?: boolean) => void;
 }
 
 export function DashboardTour({ onComplete }: Props) {
@@ -88,14 +88,14 @@ export function DashboardTour({ onComplete }: Props) {
 
   const handleNext = () => {
     if (isLast) {
-      onComplete();
+      onComplete(false);
     } else {
       setStepIndex((i) => i + 1);
     }
   };
 
   const handleSkip = () => {
-    onComplete();
+    onComplete(true);
   };
 
   if (!mounted || !targetRect) return null;

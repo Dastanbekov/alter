@@ -21,6 +21,7 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [base64ImagesForSchedule, setBase64ImagesForSchedule] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -267,11 +268,13 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
             ) : (
               <>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (!isConnected) {
                       toast.error(`Please connect LinkedIn first in Settings`);
                       return;
                     }
+                    const b64Images = await Promise.all(files.map(f => getBase64(f)));
+                    setBase64ImagesForSchedule(b64Images);
                     setShowSchedule(true);
                   }}
                   className="px-4 py-2 rounded-full border border-gray-500 text-gray-600 font-semibold text-[15px] hover:bg-gray-50 hover:border-gray-700 transition-all flex items-center gap-2 cursor-pointer"
@@ -295,6 +298,7 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
         <ScheduleModal
           post={{ ...post, content }}
           workspace={workspace}
+          images={base64ImagesForSchedule}
           onClose={() => setShowSchedule(false)}
           onScheduled={() => {
             setShowSchedule(false);

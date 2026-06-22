@@ -10,6 +10,7 @@ interface ScheduledPost {
   platform: string;
   content: string;
   scheduledAt: string;
+  mediaUrls?: string[];
 }
 
 interface WorkspaceWithPosts {
@@ -173,6 +174,21 @@ export function ScheduledBoard() {
                     <div className="text-[13px] text-[var(--text-primary)] leading-[1.5] break-words line-clamp-3">
                       {post.content}
                     </div>
+
+                    {post.mediaUrls && post.mediaUrls.length > 0 && (
+                      <div className="mt-1">
+                        <img 
+                          src={post.mediaUrls[0].startsWith('data:') || post.mediaUrls[0].startsWith('blob:') ? post.mediaUrls[0] : `data:image/jpeg;base64,${post.mediaUrls[0]}`}
+                          alt="Attached media" 
+                          className="w-full h-auto max-h-[120px] object-cover rounded border border-[var(--border)]"
+                        />
+                        {post.mediaUrls.length > 1 && (
+                          <div className="text-[10px] text-[var(--text-muted)] mt-1 font-semibold">
+                            +{post.mediaUrls.length - 1} more image{post.mediaUrls.length > 2 ? 's' : ''}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="flex items-center gap-1.5 text-[12px] text-[var(--text-secondary)] mt-1 pt-3 border-t border-dashed border-[var(--border)]">
                       <Clock size={12} />

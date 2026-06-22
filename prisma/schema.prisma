@@ -99,6 +99,7 @@ model Post {
   platform    String
   content     String
   status      String    @default("draft")
+  mediaUrls   String[]  @default([])
   scheduledAt DateTime?
   publishedAt DateTime?
   errorMsg    String?

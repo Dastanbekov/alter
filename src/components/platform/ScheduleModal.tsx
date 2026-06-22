@@ -8,11 +8,12 @@ import type { GeneratedPostItem, Workspace } from "@/types";
 interface Props {
   post: GeneratedPostItem;
   workspace: Workspace;
+  images?: string[];
   onClose: () => void;
   onScheduled: () => void;
 }
 
-export function ScheduleModal({ post, workspace, onClose, onScheduled }: Props) {
+export function ScheduleModal({ post, workspace, images, onClose, onScheduled }: Props) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [saving, setSaving] = useState(false);
@@ -38,6 +39,7 @@ export function ScheduleModal({ post, workspace, onClose, onScheduled }: Props) 
           workspaceId: workspace.id,
           platform: post.platform,
           content: post.content,
+          images: images || [],
           scheduledAt: scheduledAt.toISOString(),
         }),
       });
@@ -61,9 +63,15 @@ export function ScheduleModal({ post, workspace, onClose, onScheduled }: Props) 
   return (
     <div
       className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[1000] p-6"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="scale-in bg-[var(--surface-2)] border border-[var(--border)] rounded-[20px] p-6 md:p-8 w-full max-w-[420px] shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
+      <div 
+        className="scale-in bg-[var(--surface-2)] border border-[var(--border)] rounded-[20px] p-6 md:p-8 w-full max-w-[420px] shadow-[0_24px_80px_rgba(0,0,0,0.5)]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-[10px] bg-[rgba(67,56,255,0.15)] flex items-center justify-center">

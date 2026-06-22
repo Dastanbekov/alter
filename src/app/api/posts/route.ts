@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
         platform,
         content,
         status,
+        mediaUrls: images && Array.isArray(images) ? images : [],
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
       },
     });
@@ -202,6 +203,35 @@ export async function POST(req: NextRequest) {
               }
             }
 
+            // Handle image uploads if present
+            let mediaIds: string[] = [];
+            if (images && images.length > 0) {
+              for (const base64Image of images) {
+                const base64Data = base64Image.split(",")[1] || base64Image;
+                
+                const uploadForm = new URLSearchParams();
+                uploadForm.append("media_data", base64Data);
+
+                const uploadRes = await fetch("https://upload.twitter.com/1.1/media/upload.json", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${activeToken}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                  },
+                  body: uploadForm
+                });
+
+                if (uploadRes.ok) {
+                  const uploadData = await uploadRes.json();
+                  if (uploadData.media_id_string) {
+                    mediaIds.push(uploadData.media_id_string);
+                  }
+                } else {
+                  console.error("Failed to upload image to Twitter:", await uploadRes.text());
+                }
+              }
+            }
+
             const tweets = content.split("[TWEET_BREAK]").map((t: string) => t.trim()).filter(Boolean);
             let previousTweetId: string | null = null;
             
@@ -209,6 +239,9 @@ export async function POST(req: NextRequest) {
               const body: any = { text: tweets[i] };
               if (previousTweetId) {
                 body.reply = { in_reply_to_tweet_id: previousTweetId };
+              }
+              if (i === 0 && mediaIds.length > 0) {
+                body.media = { media_ids: mediaIds.slice(0, 4) }; // Twitter max 4 images
               }
 
               const xRes = await fetch("https://api.twitter.com/2/tweets", {

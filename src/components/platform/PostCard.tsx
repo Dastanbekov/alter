@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, Send, Clock, Check, X as XIcon, Zap, Image as ImageIcon, Globe, Smile, MapPin } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Pencil, Send, Clock, Check, X as XIcon, Zap, Image as ImageIcon, Globe, Smile, MapPin, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { ScheduleModal } from "./ScheduleModal";
 import type { GeneratedPostItem, Workspace, SocialPlatform } from "@/types";
@@ -57,6 +57,41 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
   const [published, setPublished] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
 
+  const [files, setFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [base64ImagesForSchedule, setBase64ImagesForSchedule] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      const newUrls = newFiles.map((file) => URL.createObjectURL(file));
+      setFiles((prev) => [...prev, ...newFiles]);
+      setPreviewUrls((prev) => [...prev, ...newUrls]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    URL.revokeObjectURL(previewUrls[index]);
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const getBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
   const platform = PLATFORM_CONFIG[post.platform];
   const charLimit = platform.charLimit;
   const overLimit = charLimit && post.content.length > charLimit;
@@ -101,6 +136,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
     }
     setPublishing(true);
     try {
+      const base64Images = await Promise.all(files.map(f => getBase64(f)));
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,6 +144,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
           workspaceId: workspace.id,
           platform: post.platform,
           content: post.content,
+          images: base64Images,
         }),
       });
 
@@ -191,6 +228,36 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
                     {tweet.trim()}
                   </p>
 
+                  {/* Attached Images (first tweet only) */}
+                  {idx === 0 && (previewUrls.length > 0 || (post.mediaUrls && post.mediaUrls.length > 0)) && (
+                    <div className="w-full relative mt-3 group">
+                      <div className={`grid gap-0.5 ${(previewUrls.length || post.mediaUrls?.length || 0) === 1 ? 'grid-cols-1' : (previewUrls.length || post.mediaUrls?.length || 0) === 2 ? 'grid-cols-2' : 'grid-cols-2 grid-rows-2'}`}>
+                        {(previewUrls.length > 0 ? previewUrls : (post.mediaUrls || [])).slice(0, 4).map((url, i) => (
+                          <div 
+                            key={i} 
+                            className={`relative bg-[var(--surface-3)] border border-[var(--border)] overflow-hidden rounded-md ${
+                              (previewUrls.length || post.mediaUrls?.length || 0) === 3 && i === 0 ? 'row-span-2' : ''
+                            }`}
+                          >
+                            <img 
+                              src={url.startsWith('data:') || url.startsWith('blob:') ? url : `data:image/jpeg;base64,${url}`}
+                              alt="Preview" 
+                              className="w-full h-full object-cover max-h-[200px]" 
+                            />
+                            {!published && previewUrls.length > 0 && (
+                              <button
+                                onClick={() => removeImage(i)}
+                                className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 cursor-pointer"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Image Recommendations (show on last tweet only) */}
                   {idx === arr.length - 1 && post.imageRecommendations && post.imageRecommendations.length > 0 && (
                     <div className="mt-3">
@@ -238,6 +305,36 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
             <p className="text-[14px] text-[var(--text-primary)] leading-[1.7] whitespace-pre-wrap">
               {post.content}
             </p>
+
+            {/* Attached Images */}
+            {(previewUrls.length > 0 || (post.mediaUrls && post.mediaUrls.length > 0)) && (
+              <div className="w-full relative mt-3 group">
+                <div className={`grid gap-0.5 rounded-md overflow-hidden ${(previewUrls.length || post.mediaUrls?.length || 0) === 1 ? 'grid-cols-1' : (previewUrls.length || post.mediaUrls?.length || 0) === 2 ? 'grid-cols-2' : 'grid-cols-2 grid-rows-2'}`}>
+                  {(previewUrls.length > 0 ? previewUrls : (post.mediaUrls || [])).slice(0, 4).map((url, i) => (
+                    <div 
+                      key={i} 
+                      className={`relative bg-[var(--surface-3)] border border-[var(--border)] ${
+                        (previewUrls.length || post.mediaUrls?.length || 0) === 3 && i === 0 ? 'row-span-2' : ''
+                      }`}
+                    >
+                      <img 
+                        src={url.startsWith('data:') || url.startsWith('blob:') ? url : `data:image/jpeg;base64,${url}`}
+                        alt="Preview" 
+                        className="w-full h-full object-cover max-h-[300px]" 
+                      />
+                      {!published && previewUrls.length > 0 && (
+                        <button
+                          onClick={() => removeImage(i)}
+                          className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Image Recommendations */}
             {post.imageRecommendations && post.imageRecommendations.length > 0 && (
@@ -310,21 +407,41 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
 
         {/* Actions */}
         {!published && (
-          <div className="border-t border-[var(--border)] px-4 py-3 flex gap-2.5 justify-end">
-            <button
-              onClick={() => {
-                if (!isConnected) {
-                  toast.error(`Please connect ${platform.label} first in Settings`);
-                  return;
-                }
-                setShowSchedule(true);
-              }}
-              className="btn btn-secondary btn-sm"
-            >
-              <Clock size={14} />
-              Schedule
-            </button>
-            <button
+          <div className="border-t border-[var(--border)] px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                multiple
+                className="hidden"
+              />
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-8 h-8 rounded-full hover:bg-[var(--surface-3)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
+                title="Attach media"
+              >
+                <ImageIcon size={18} />
+              </button>
+            </div>
+            <div className="flex gap-2.5">
+              <button
+                onClick={async () => {
+                  if (!isConnected) {
+                    toast.error(`Please connect ${platform.label} first in Settings`);
+                    return;
+                  }
+                  const b64Images = await Promise.all(files.map(f => getBase64(f)));
+                  setBase64ImagesForSchedule(b64Images);
+                  setShowSchedule(true);
+                }}
+                className="btn btn-secondary btn-sm"
+              >
+                <Clock size={14} />
+                Schedule
+              </button>
+              <button
               onClick={() => {
                 if (!isConnected) {
                   toast.error(`Please connect ${platform.label} first in Settings`);
@@ -371,6 +488,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
         <ScheduleModal
           post={post}
           workspace={workspace}
+          images={base64ImagesForSchedule}
           onClose={() => setShowSchedule(false)}
           onScheduled={() => {
             setShowSchedule(false);

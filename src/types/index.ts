@@ -21,6 +21,7 @@ export interface Post {
   platform: SocialPlatform;
   content: string;
   status: PostStatus;
+  mediaUrls: string[];
   scheduledAt: Date | null;
   publishedAt: Date | null;
   errorMsg: string | null;
@@ -62,6 +63,7 @@ export interface GeneratedPostItem {
   platform: SocialPlatform;
   content: string;
   status: PostStatus;
+  mediaUrls?: string[];
   scheduledAt?: Date;
   imageRecommendations?: string[];
 }

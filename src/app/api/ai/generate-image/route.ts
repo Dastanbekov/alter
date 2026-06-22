@@ -13,42 +13,48 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.RECRAFT_API_TOKEN;
     if (!apiKey) {
-      return NextResponse.json({ error: "GEMINI_API_KEY is not configured" }, { status: 500 });
+      return NextResponse.json({ error: "RECRAFT_API_TOKEN is not configured" }, { status: 500 });
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          instances: [
-            {
-              prompt: prompt,
-            },
-          ],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: "1:1",
-            outputOptions: {
-              mimeType: "image/jpeg",
-            },
-          },
-        }),
-      }
-    );
+    const response = await fetch("https://external.api.recraft.ai/v1/images/generations", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        model: "recraftv4",
+        response_format: "b64_json",
+        size: "1024x1024"
+      }),
+    });
 
-    const data = await response.json();
+    const dataText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(dataText);
+    } catch {
+      return NextResponse.json({ error: dataText || "Failed to generate image" }, { status: response.status });
+    }
 
     if (!response.ok) {
-      return NextResponse.json({ error: data.error?.message || "Failed to generate image" }, { status: response.status });
+      return NextResponse.json({ error: data.error?.message || data.message || "Failed to generate image" }, { status: response.status });
     }
 
-    const base64Image = data?.predictions?.[0]?.bytesBase64Encoded;
+    const base64Image = data?.data?.[0]?.b64_json;
 
     if (!base64Image) {
+      const imageUrl = data?.data?.[0]?.url;
+      if (imageUrl) {
+        const imageRes = await fetch(imageUrl);
+        const arrayBuffer = await imageRes.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const b64 = buffer.toString('base64');
+        return NextResponse.json({ imageBase64: b64 });
+      }
       return NextResponse.json({ error: "No image generated" }, { status: 500 });
     }
 

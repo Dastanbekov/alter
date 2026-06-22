@@ -26,7 +26,10 @@ export function OnboardingStep4({ data, onChange, onNext }: Props) {
           body: JSON.stringify(data),
         });
 
-        if (!res.ok) throw new Error("Failed to generate strategy");
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => null);
+          throw new Error(errorData?.details || errorData?.error || "Failed to generate strategy");
+        }
 
         const strategy = await res.json();
         
@@ -37,7 +40,8 @@ export function OnboardingStep4({ data, onChange, onNext }: Props) {
         
         onNext();
       } catch (e: any) {
-        toast.error("Could not generate strategy. Let's finish up anyway.");
+        console.error(e);
+        toast.error(`Strategy error: ${e.message || "Failed"}. Using fallback.`);
         onNext();
       }
     };

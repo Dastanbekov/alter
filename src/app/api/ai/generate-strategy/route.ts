@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
   const brandData = await req.json();
 
-  if (!brandData || !brandData.name) {
+  if (!brandData || !brandData.workspaceName) {
     return NextResponse.json({ error: "No brand data provided" }, { status: 400 });
   }
 

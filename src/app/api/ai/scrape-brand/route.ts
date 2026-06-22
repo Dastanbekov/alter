@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { generateObject } from "ai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+const deepseek = createOpenAI({
+  baseURL: "https://api.deepseek.com/v1",
+  apiKey: process.env.DEEPSEEK_API_KEY,
 });
 
 export const maxDuration = 60; // Allow more time for scraping and generating
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
 
   try {
     const { object } = await generateObject({
-      model: google("gemini-2.5-flash"),
+      model: deepseek("deepseek-chat"),
       system: `You are an expert brand analyst. Given the content of a company's website or a description, extract and infer their brand identity.
 If some information is missing, use your best judgment to infer it based on the industry and description. For example, if colors aren't explicitly mentioned in the text, suggest appropriate colors for the industry.`,
       prompt: `Analyze the following business context:\n\n${contextText}\n\nExtract or infer the following details: Business Name, Description, Services offered, Brand Colors (hex codes or names), Fonts used (if mentioned or typical for the industry), Tone of Voice (e.g., 'professional, inspiring'), Target Audience, Brand Style keywords, and Tagline.`,

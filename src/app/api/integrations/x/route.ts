@@ -25,12 +25,12 @@ export async function GET(req: NextRequest) {
   const baseUrl = process.env.NEXTAUTH_URL || `https://${req.headers.get("host")}`;
   const redirectUri = `${baseUrl}/api/integrations/x/callback`;
 
-  // Generate PKCE code verifier (plain method for simplicity)
-  // Must be between 43 and 128 characters long
-  const codeVerifier = crypto.randomBytes(32).toString('hex');
+  // Generate PKCE code verifier
+  const codeVerifier = crypto.randomBytes(32).toString('base64url');
+  const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
   
   // Pack workspaceId and codeVerifier into state
-  const state = Buffer.from(`${workspaceId}::${codeVerifier}`).toString('base64');
+  const state = Buffer.from(`${workspaceId}::${codeVerifier}`).toString('base64url');
 
   const params = new URLSearchParams({
     response_type: "code",
@@ -38,8 +38,8 @@ export async function GET(req: NextRequest) {
     redirect_uri: redirectUri,
     scope: "tweet.read tweet.write users.read offline.access",
     state: state,
-    code_challenge: codeVerifier,
-    code_challenge_method: "plain"
+    code_challenge: codeChallenge,
+    code_challenge_method: "s256"
   });
 
   const authUrl = `https://twitter.com/i/oauth2/authorize?${params.toString()}`;

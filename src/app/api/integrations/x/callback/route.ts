@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const state = Buffer.from(stateBase64, "base64").toString("utf-8");
+    const state = Buffer.from(stateBase64, "base64url").toString("utf-8");
     const [workspaceId, codeVerifier] = state.split("::");
 
     if (!workspaceId || !codeVerifier) {

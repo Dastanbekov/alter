@@ -10,7 +10,7 @@ interface Props {
   post: GeneratedPostItem;
   workspace: Workspace;
   onClose: () => void;
-  onUpdate: (content: string) => void;
+  onUpdate: (content: string, mediaUrls?: string[]) => void;
 }
 
 export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }: Props) {
@@ -50,19 +50,27 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
     el.style.height = el.scrollHeight + "px";
   }, [content, isExpanded]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
       const newUrls = newFiles.map((file) => URL.createObjectURL(file));
-      setFiles((prev) => [...prev, ...newFiles]);
+      const updatedFiles = [...files, ...newFiles];
+      setFiles(updatedFiles);
       setPreviewUrls((prev) => [...prev, ...newUrls]);
+
+      const b64Images = await Promise.all(updatedFiles.map(f => getBase64(f)));
+      onUpdate(content, b64Images);
     }
   };
 
-  const removeImage = (index: number) => {
+  const removeImage = async (index: number) => {
     URL.revokeObjectURL(previewUrls[index]);
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+    const updatedFiles = files.filter((_, i) => i !== index);
+    setFiles(updatedFiles);
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+
+    const b64Images = await Promise.all(updatedFiles.map(f => getBase64(f)));
+    onUpdate(content, b64Images);
   };
 
   const getBase64 = (file: File): Promise<string> => {

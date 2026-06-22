@@ -106,8 +106,8 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
   const [approving, setApproving] = useState(false);
   const isApproved = story.status === "approved";
 
-  const handleNodeUpdate = (nodeId: string, content: string) => {
-    const updated = nodes.map((n) => (n.id === nodeId ? { ...n, content } : n));
+  const handleNodeUpdate = (nodeId: string, content: string, mediaUrls?: string[]) => {
+    const updated = nodes.map((n) => (n.id === nodeId ? { ...n, content, mediaUrls: mediaUrls || n.mediaUrls } : n));
     setNodes(updated);
     onNodesChange?.(updated);
   };
@@ -303,13 +303,14 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
                   platform: openNode.platform,
                   content: openNode.content,
                   status: "draft",
+                  mediaUrls: openNode.mediaUrls,
                   imageRecommendations: openNode.imageRecommendations,
                 }}
                 workspace={workspace}
                 onClose={() => setOpenNode(null)}
-                onUpdate={(content) => {
-                  handleNodeUpdate(openNode.id, content);
-                  setOpenNode({ ...openNode, content });
+                onUpdate={(content, mediaUrls) => {
+                  handleNodeUpdate(openNode.id, content, mediaUrls);
+                  setOpenNode({ ...openNode, content, mediaUrls: mediaUrls || openNode.mediaUrls });
                 }}
               />
             ) : (
@@ -319,12 +320,13 @@ export function StoryCanvas({ story, workspace, readOnly = false, onApprove, onN
                   platform: openNode.platform,
                   content: openNode.content,
                   status: "draft",
+                  mediaUrls: openNode.mediaUrls,
                   imageRecommendations: openNode.imageRecommendations,
                 }}
                 workspace={workspace}
-                onUpdate={(content) => {
-                  handleNodeUpdate(openNode.id, content);
-                  setOpenNode({ ...openNode, content });
+                onUpdate={(content, mediaUrls) => {
+                  handleNodeUpdate(openNode.id, content, mediaUrls);
+                  setOpenNode({ ...openNode, content, mediaUrls: mediaUrls || openNode.mediaUrls });
                 }}
               />
             )}

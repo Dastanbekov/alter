@@ -75,6 +75,7 @@ export async function PATCH(
             workspaceId: story.workspaceId,
             platform: node.platform,
             content: node.content,
+            mediaUrls: node.mediaUrls || [],
             status: "scheduled",
             scheduledAt: new Date(node.scheduledAt),
           },

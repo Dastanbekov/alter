@@ -82,6 +82,7 @@ export interface StoryNode {
   scheduledAt: string;    // ISO datetime string chosen by AI
   platform: SocialPlatform;
   content: string;
+  mediaUrls?: string[];
   imageRecommendations?: string[];
 }
 

@@ -201,6 +201,7 @@ export function DashboardLayout() {
               setPrefilledPrompt(prompt);
               setCurrentView("chat");
             }} 
+            onWorkspaceUpdate={fetchWorkspaces}
           />
         ) : activeWorkspace ? (
           <ChatArea

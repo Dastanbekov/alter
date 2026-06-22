@@ -7,10 +7,69 @@ import type { Workspace } from "@/types";
 interface Props {
   workspace: Workspace;
   onStartChat: (prompt: string) => void;
+  onWorkspaceUpdate?: () => void;
 }
 
-export function PlanningView({ workspace, onStartChat }: Props) {
+export function PlanningView({ workspace, onStartChat, onWorkspaceUpdate }: Props) {
   const { angle, strategyChecklist } = workspace;
+  const [generating, setGenerating] = useState(false);
+
+  const handleGenerateStrategy = async () => {
+    setGenerating(true);
+    try {
+      // Create OnboardingData payload for the generation endpoint
+      const payload = {
+        purpose: workspace.purpose,
+        details: workspace.details || "",
+        platforms: workspace.socials.map((s) => s.platform),
+        workspaceName: workspace.name,
+        website: workspace.website || "",
+        services: workspace.services || [],
+        colors: workspace.colors || [],
+        fonts: workspace.fonts || [],
+        toneOfVoice: workspace.toneOfVoice || "",
+        targetAudience: workspace.targetAudience || "",
+        brandStyle: workspace.brandStyle || [],
+        tagline: workspace.tagline || "",
+      };
+
+      const res = await fetch("/api/ai/generate-strategy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.details || err?.error || "Failed to generate strategy");
+      }
+
+      const strategy = await res.json();
+
+      // Save to workspace
+      const updateRes = await fetch("/api/workspaces", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: workspace.id,
+          name: workspace.name,
+          angle: strategy.angle,
+          strategyChecklist: strategy.checklist,
+        }),
+      });
+
+      if (!updateRes.ok) throw new Error("Failed to save strategy");
+
+      if (onWorkspaceUpdate) {
+        onWorkspaceUpdate();
+      }
+    } catch (e: any) {
+      console.error(e);
+      alert(`Error generating strategy: ${e.message}`);
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   if (!strategyChecklist || strategyChecklist.length === 0) {
     return (
@@ -20,9 +79,19 @@ export function PlanningView({ workspace, onStartChat }: Props) {
             <Sparkles size={32} />
           </div>
           <h2 className="text-[24px] font-bold text-[var(--text-primary)] mb-3 font-['Outfit']">No strategy yet</h2>
-          <p className="text-[15px] text-[var(--text-secondary)]">
+          <p className="text-[15px] text-[var(--text-secondary)] mb-8">
             This workspace was created without an AI-generated strategy. You can still use the Chat view to generate posts manually.
           </p>
+          <button
+            onClick={handleGenerateStrategy}
+            disabled={generating}
+            className="flex items-center justify-center gap-2 bg-[#1a7352] text-white px-6 py-3 rounded-[12px] font-semibold hover:bg-[#145d42] transition-colors disabled:opacity-50 mx-auto"
+          >
+            {generating ? (
+              <span className="animate-spin border-2 border-white/20 border-t-white rounded-full w-5 h-5" />
+            ) : null}
+            {generating ? "Generating..." : "Generate Strategy"}
+          </button>
         </div>
       </div>
     );

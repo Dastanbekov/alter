@@ -23,7 +23,7 @@ interface Props {
 export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateName }: Props) {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"integrations" | "tov">("integrations");
+  const [activeTab, setActiveTab] = useState<"integrations" | "brand" | "tov">("integrations");
 
   // Rename
   const [isEditingName, setIsEditingName] = useState(false);
@@ -208,10 +208,16 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateNam
               Integrations
             </button>
             <button
+              onClick={() => setActiveTab("brand")}
+              className={`pb-3 text-[14px] font-semibold border-b-2 transition-colors ${activeTab === "brand" ? "border-[var(--primary)] text-[var(--text-primary)]" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
+            >
+              Brand Details
+            </button>
+            <button
               onClick={() => setActiveTab("tov")}
               className={`pb-3 text-[14px] font-semibold border-b-2 transition-colors ${activeTab === "tov" ? "border-[var(--primary)] text-[var(--text-primary)]" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
             >
-              Tone of Voice
+              Platform TOV
             </button>
           </div>
         </div>
@@ -422,6 +428,10 @@ export function WorkspaceSettingsModal({ isOpen, onClose, workspace, onUpdateNam
             </div>
           )}
 
+          {activeTab === "brand" && (
+            <BrandDetailsTab workspace={workspace} onUpdate={onUpdateName} />
+          )}
+
           {activeTab === "tov" && (
             <ToneOfVoiceTab workspaceId={workspace.id} linkedinIntegration={linkedinIntegration} telegramIntegration={telegramIntegration} />
           )}
@@ -630,6 +640,109 @@ function ToneOfVoiceTab({ workspaceId, linkedinIntegration, telegramIntegration 
       
       {renderPlatform("linkedin", "LinkedIn", !!linkedinIntegration, true)}
       {renderPlatform("telegram", "Telegram", !!telegramIntegration, false)}
+    </div>
+  );
+}
+
+function BrandDetailsTab({ workspace, onUpdate }: { workspace: Workspace; onUpdate?: (newName: string) => void }) {
+  const [details, setDetails] = useState(workspace.details || "");
+  const [toneOfVoice, setToneOfVoice] = useState(workspace.toneOfVoice || "");
+  const [targetAudience, setTargetAudience] = useState(workspace.targetAudience || "");
+  const [brandStyleStr, setBrandStyleStr] = useState(workspace.brandStyle?.join(", ") || "");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/workspaces", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: workspace.id,
+          name: workspace.name, // required by the endpoint
+          details,
+          toneOfVoice,
+          targetAudience,
+          brandStyle: brandStyleStr.split(",").map(s => s.trim()).filter(Boolean),
+        }),
+      });
+
+      if (!res.ok) throw new Error();
+      toast.success("Brand details updated!");
+      // Ideally we would trigger a re-fetch of the workspace here if needed
+      // but the `onUpdate` prop currently just triggers a re-fetch in the parent
+      if (onUpdate) onUpdate(workspace.name);
+    } catch {
+      toast.error("Failed to update brand details");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="text-[13px] text-[var(--text-secondary)] mb-2">
+        Update your core brand details. These guide the AI when generating strategies and posts.
+      </div>
+      
+      <div>
+        <label className="text-[13px] font-semibold text-[var(--text-primary)] block mb-1">
+          Business Description
+        </label>
+        <textarea
+          className="input text-[13px] leading-relaxed resize-y min-h-[80px]"
+          placeholder="What does your business do?"
+          value={details}
+          onChange={(e) => setDetails(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-[13px] font-semibold text-[var(--text-primary)] block mb-1">
+          Global Tone of Voice
+        </label>
+        <textarea
+          className="input text-[13px] leading-relaxed resize-y min-h-[60px]"
+          placeholder="e.g. Professional, friendly, witty..."
+          value={toneOfVoice}
+          onChange={(e) => setToneOfVoice(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-[13px] font-semibold text-[var(--text-primary)] block mb-1">
+          Target Audience
+        </label>
+        <textarea
+          className="input text-[13px] leading-relaxed resize-y min-h-[60px]"
+          placeholder="Who are you trying to reach?"
+          value={targetAudience}
+          onChange={(e) => setTargetAudience(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-[13px] font-semibold text-[var(--text-primary)] block mb-1">
+          Brand Style Keywords (comma separated)
+        </label>
+        <input
+          type="text"
+          className="input text-[13px]"
+          placeholder="Modern, minimalist, tech-savvy..."
+          value={brandStyleStr}
+          onChange={(e) => setBrandStyleStr(e.target.value)}
+        />
+      </div>
+
+      <div className="flex justify-end mt-2">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="btn btn-primary"
+        >
+          {saving ? "Saving..." : "Save Brand Details"}
+        </button>
+      </div>
     </div>
   );
 }

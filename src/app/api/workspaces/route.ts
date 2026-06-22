@@ -133,7 +133,9 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const { id, name } = await req.json();
+    const { 
+      id, name, details, toneOfVoice, targetAudience, brandStyle, angle, strategyChecklist 
+    } = await req.json();
 
     if (!id || !name?.trim()) {
       return NextResponse.json({ error: "ID and name are required" }, { status: 400 });
@@ -149,7 +151,16 @@ export async function PATCH(req: NextRequest) {
 
     const updated = await prisma.workspace.update({
       where: { id },
-      data: { name: name.trim() },
+      data: { 
+        name: name.trim(),
+        ...(details !== undefined && { details }),
+        ...(toneOfVoice !== undefined && { toneOfVoice }),
+        ...(targetAudience !== undefined && { targetAudience }),
+        ...(brandStyle !== undefined && { brandStyle }),
+        ...(angle !== undefined && { angle }),
+        ...(strategyChecklist !== undefined && { strategyChecklist }),
+      },
+      include: { socials: true },
     });
 
     return NextResponse.json(updated);

@@ -20,6 +20,7 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
   const [mediaList, setMediaList] = useState<string[]>(post.mediaUrls || []);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [generatingImageFor, setGeneratingImageFor] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -69,6 +70,33 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
   };
 
   const isConnected = workspace.socials.some(s => s.platform === "linkedin");
+
+  const handleGenerateImage = async (prompt: string, index: number) => {
+    setGeneratingImageFor(index);
+    try {
+      const res = await fetch("/api/ai/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Failed to generate image");
+        return;
+      }
+      
+      const b64 = `data:image/jpeg;base64,${data.imageBase64}`;
+      const updatedMedia = [...mediaList, b64];
+      setMediaList(updatedMedia);
+
+      onUpdate(content, updatedMedia);
+      toast.success("Image generated!");
+    } catch (e) {
+      toast.error("Failed to generate image");
+    } finally {
+      setGeneratingImageFor(null);
+    }
+  };
 
   const handlePublish = async () => {
     if (!isConnected) {
@@ -225,7 +253,25 @@ export function LinkedInPostPreviewModal({ post, workspace, onClose, onUpdate }:
                       <span className="w-4 h-4 rounded-full bg-[#1a7352]/10 text-[#1a7352] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
                         {idx + 1}
                       </span>
-                      <span className="leading-snug">{rec}</span>
+                      <div className="flex-1 leading-snug">
+                        {rec}
+                        {!published && (
+                          <div className="mt-2">
+                            <button
+                              onClick={() => handleGenerateImage(rec, idx)}
+                              disabled={generatingImageFor !== null}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--surface-2)] hover:bg-[#1a7352]/10 text-[12px] font-semibold text-[var(--text-primary)] hover:text-[#1a7352] transition-colors border border-[var(--border)] hover:border-[#1a7352]/30 disabled:opacity-50"
+                            >
+                              {generatingImageFor === idx ? (
+                                <span className="animate-spin border-[1.5px] border-[#1a7352]/20 border-t-[#1a7352] rounded-full w-3.5 h-3.5" />
+                              ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#1a7352]"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+                              )}
+                              Generate it!
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowRight, CheckCircle, RotateCcw } from "lucide-react";
+import { ArrowRight, CheckCircle, RotateCcw, Map } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Story, StoryNode, Workspace, SocialPlatform } from "@/types";
 import { StoryCanvas, StoryCanvasSkeleton } from "./StoryCanvas";
@@ -254,7 +254,9 @@ export function StoryModePanel({ workspace, onBillingUpdate }: Props) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6">
         <div className="w-full max-w-[560px] text-center">
-          <div className="text-[40px] mb-3">🗺️</div>
+          <div className="flex justify-center mb-4 text-[#1a7352]">
+            <Map size={48} />
+          </div>
           <h2 className="font-['Outfit'] text-[22px] font-bold text-[var(--text-primary)] mb-2">
             Start a Content Campaign
           </h2>

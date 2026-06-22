@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Sparkles, ArrowRight } from "lucide-react";
 import type { Workspace } from "@/types";
 
 interface Props {
@@ -13,7 +13,6 @@ interface Props {
 export function PlanningView({ workspace, onStartChat, onWorkspaceUpdate }: Props) {
   const { angle, strategyChecklist } = workspace;
   const [generating, setGenerating] = useState(false);
-
   const handleGenerateStrategy = async () => {
     setGenerating(true);
     try {

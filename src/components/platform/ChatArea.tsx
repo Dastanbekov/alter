@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Zap, AlertCircle, Settings, Plus } from "lucide-react";
+import { ArrowUp, Zap, AlertCircle, Settings, Plus, Map, History, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { PostCard } from "./PostCard";
-import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
+
 import { LinkedInPostPreviewModal } from "./LinkedInPostPreviewModal";
 import { StoryModePanel } from "./StoryModePanel";
 import type { Workspace, GeneratedPostGroup, GeneratedPostItem, SocialPlatform } from "@/types";
@@ -71,11 +71,15 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade, i
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>([]);
   const [editingPost, setEditingPost] = useState<{groupId: string, post: GeneratedPostItem} | null>(null);
   const [chatMode, setChatMode] = useState<"post" | "story">("post");
   const [chatTitle, setChatTitle] = useState("New Chat");
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -124,6 +128,71 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade, i
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const fetchSessions = async () => {
+    try {
+      const res = await fetch(`/api/chats?workspaceId=${workspace.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSessions(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, [workspace.id]);
+
+  const syncChatSession = async () => {
+    if (messages.length === 0) return;
+    try {
+      const res = await fetch("/api/chats/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workspaceId: workspace.id,
+          sessionId: currentSessionId,
+          title: chatTitle,
+          messages,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.sessionId && !currentSessionId) {
+          setCurrentSessionId(data.sessionId);
+        }
+        fetchSessions(); // refresh the list
+      }
+    } catch (e) {
+      console.error("Failed to sync chat", e);
+    }
+  };
+
+  useEffect(() => {
+    if (!generating && messages.length > 0) {
+      syncChatSession();
+    }
+  }, [messages, generating, chatTitle]);
+
+  const startNewChat = () => {
+    setMessages([]);
+    setCurrentSessionId(null);
+    setChatTitle("New Chat");
+  };
+
+  const loadSession = (session: any) => {
+    try {
+      const loadedMessages = session.messages.map((m: any) => JSON.parse(m.content));
+      setMessages(loadedMessages);
+      setCurrentSessionId(session.id);
+      setChatTitle(session.title);
+      setHistoryOpen(false);
+    } catch (e) {
+      console.error("Failed to load session", e);
+    }
+  };
 
   // Auto-resize textarea
   useEffect(() => {
@@ -311,28 +380,74 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade, i
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden relative">
       {/* Header */}
-      <button
-        onClick={() => setIsSettingsOpen(true)}
-        className="w-full text-left bg-[var(--surface-1)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between transition-colors duration-200 cursor-pointer hover:bg-[var(--surface-2)] shrink-0"
-        title="Open workspace settings"
-      >
-        <div className="flex flex-col">
-          <div className="font-['Outfit'] font-bold text-[18px] text-[var(--text-primary)]">
-            {chatTitle}
-          </div>
-          <div className="text-[13px] text-[var(--text-secondary)]">
-            Workspace: {workspace.name}
+      <div className="w-full bg-[var(--surface-1)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setHistoryOpen(true)}
+            className="p-2 -ml-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-2)] rounded-md transition-colors"
+            title="Chat History"
+          >
+            <History size={18} />
+          </button>
+          <div>
+            <div className="font-['Outfit'] font-bold text-[18px] text-[var(--text-primary)] flex items-center gap-2">
+              {chatTitle}
+            </div>
+            <div className="text-[13px] text-[var(--text-secondary)]">
+              Workspace: {workspace.name}
+            </div>
           </div>
         </div>
-        <Settings size={20} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors" />
-      </button>
+        <button
+          onClick={startNewChat}
+          className="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-2)] rounded-md transition-colors flex items-center gap-2 text-[14px] font-medium"
+          title="New Chat"
+        >
+          <Plus size={16} />
+          <span className="hidden sm:inline">New Chat</span>
+        </button>
+      </div>
 
-      <WorkspaceSettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        workspace={workspace}
-        onUpdateName={() => window.location.reload()}
-      />
+      {historyOpen && (
+        <div className="absolute inset-y-0 left-0 w-full sm:w-[320px] bg-[var(--surface-1)] border-r border-[var(--border)] z-50 flex flex-col shadow-2xl animate-in slide-in-from-left">
+          <div className="p-4 border-b border-[var(--border)] flex items-center justify-between shrink-0">
+            <h3 className="font-['Outfit'] font-bold text-[18px] text-[var(--text-primary)] flex items-center gap-2">
+              <History size={18} className="text-[#1a7352]" />
+              Chat History
+            </h3>
+            <button
+              onClick={() => setHistoryOpen(false)}
+              className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-2)] rounded-md transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3">
+            {sessions.length === 0 ? (
+              <div className="text-center text-[var(--text-muted)] text-[13px] mt-10">
+                No past chats found
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                {sessions.map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => loadSession(s)}
+                    className={`w-full text-left p-3 rounded-[10px] transition-colors ${currentSessionId === s.id ? 'bg-[#1a7352]/10 text-[#1a7352] font-semibold' : 'hover:bg-[var(--surface-2)] text-[var(--text-secondary)]'}`}
+                  >
+                    <div className="truncate text-[14px] mb-1">{s.title}</div>
+                    <div className="text-[11px] opacity-70">
+                      {new Date(s.updatedAt).toLocaleDateString()}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+
 
       {/* Story Mode Panel (replaces messages area when in story mode) */}
       {chatMode === "story" ? (
@@ -624,7 +739,7 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade, i
                   : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
               }`}
             >
-              🗺️ Story
+              <span className="flex items-center gap-1.5"><Map size={14} /> Story</span>
             </button>
           </div>
 

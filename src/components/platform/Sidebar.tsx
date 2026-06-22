@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { Workspace } from "@/types";
 import { NewWorkspaceModal } from "./NewWorkspaceModal";
+import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
 
 
 interface Props {
@@ -59,6 +60,7 @@ export function Sidebar({
   const [collapsed, setCollapsed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [stories, setStories] = useState<{ id: string; title: string; workspaceId: string; status: string }[]>([]);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const [expandedWorkspaces, setExpandedWorkspaces] = useState<Record<string, boolean>>({});
   const [workspacePosts, setWorkspacePosts] = useState<Record<string, any[]>>({});
@@ -170,11 +172,23 @@ export function Sidebar({
               {activeWorkspaceId && workspaces.find(w => w.id === activeWorkspaceId) ? (() => {
                 const ws = workspaces.find(w => w.id === activeWorkspaceId)!;
                 return (
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center font-['Outfit'] font-bold text-[13px] shrink-0 bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-white">
-                      {ws.name.charAt(0).toUpperCase()}
+                  <div className="flex items-center justify-between flex-1 pr-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center font-['Outfit'] font-bold text-[13px] shrink-0 bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-white">
+                        {ws.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-[14px] font-semibold text-[var(--text-primary)] truncate max-w-[110px]">{ws.name}</span>
                     </div>
-                    <span className="text-[14px] font-semibold text-[var(--text-primary)] truncate max-w-[130px]">{ws.name}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsSettingsOpen(true);
+                      }}
+                      className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-3)] rounded-md transition-colors"
+                      title="Workspace Settings"
+                    >
+                      <Settings size={14} />
+                    </button>
                   </div>
                 );
               })() : (
@@ -370,6 +384,15 @@ export function Sidebar({
           onWorkspacesChange();
         }}
       />
+      
+      {activeWorkspaceId && (
+        <WorkspaceSettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          workspace={workspaces.find(w => w.id === activeWorkspaceId)!}
+          onUpdateName={() => onWorkspacesChange()}
+        />
+      )}
     </>
   );
 }

@@ -470,6 +470,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
                 </>
               )}
             </button>
+            </div>
           </div>
         )}
 

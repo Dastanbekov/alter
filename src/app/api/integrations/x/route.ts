@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     scope: "tweet.read tweet.write users.read offline.access",
     state: state,
     code_challenge: codeChallenge,
-    code_challenge_method: "s256"
+    code_challenge_method: "S256"
   });
 
   const authUrl = `https://twitter.com/i/oauth2/authorize?${params.toString()}`;

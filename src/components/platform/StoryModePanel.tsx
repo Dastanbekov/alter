@@ -40,6 +40,20 @@ export function StoryModePanel({ workspace, onBillingUpdate }: Props) {
     setSelectedPlatforms(wsPlats.length > 0 ? wsPlats : ["linkedin"]);
   }, [workspace]);
 
+  // Auto-save story nodes as draft while editing in canvas mode
+  useEffect(() => {
+    if (story && step === "canvas" && story.status === "draft") {
+      const timer = setTimeout(() => {
+        fetch(`/api/stories/${story.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nodes: story.nodes, action: "save" }),
+        }).catch(err => console.error("Auto-save failed", err));
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [story?.nodes, step]);
+
   // ── Step 1: Submit brief, get questions from AI ───────────────────────────
   const handleBriefSubmit = async () => {
     const text = brief.trim();

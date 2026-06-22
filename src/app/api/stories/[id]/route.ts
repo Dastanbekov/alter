@@ -64,8 +64,20 @@ export async function PATCH(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const { nodes: updatedNodes } = await req.json();
+    const { nodes: updatedNodes, action = "approve" } = await req.json();
     const nodes: StoryNode[] = updatedNodes ?? JSON.parse(story.nodes);
+
+    if (action === "save") {
+      const updated = await prisma.story.update({
+        where: { id },
+        data: { nodes: JSON.stringify(nodes) },
+      });
+      return NextResponse.json({
+        ...updated,
+        platforms: JSON.parse(updated.platforms),
+        nodes: JSON.parse(updated.nodes) as StoryNode[],
+      });
+    }
 
     // Save all nodes as scheduled posts in DB
     await prisma.$transaction(

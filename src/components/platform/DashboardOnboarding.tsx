@@ -97,8 +97,8 @@ export function DashboardOnboarding({ workspaceId, workspaceName, onComplete }: 
           body: JSON.stringify({
             workspaceId,
             brief: context,
-            answers: { platforms: ["linkedin", "x", "telegram"] },
-            platforms: ["linkedin", "x", "telegram"],
+            answers: { platforms: selectedPlatforms },
+            platforms: selectedPlatforms,
             isTourGeneration: true,
           }),
         });
@@ -113,7 +113,7 @@ export function DashboardOnboarding({ workspaceId, workspaceName, onComplete }: 
               workspaceId,
               title: planData.data.title,
               brief: context,
-              platforms: ["linkedin", "x", "telegram"],
+              platforms: selectedPlatforms,
               nodes: planData.data.nodes,
             }),
           });
@@ -242,11 +242,79 @@ export function DashboardOnboarding({ workspaceId, workspaceName, onComplete }: 
                   <ArrowLeft size={16} /> Back
                 </button>
                 <button
-                  onClick={handleGenerate}
+                  onClick={() => setPhase("platforms")}
                   disabled={prompt.trim().length < 10}
                   className="btn btn-primary flex-[2] justify-center"
                 >
-                  Generate
+                  Next <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ──── Phase: Platforms ──── */}
+          {phase === "platforms" && (
+            <div>
+              <p className="text-[13px] text-[var(--text-secondary)] mb-4">
+                Select which platforms to generate content for:
+              </p>
+              <div className="flex flex-col gap-2.5 mb-5">
+                {PLATFORM_OPTIONS.map((p) => {
+                  const isSelected = selectedPlatforms.includes(p.value);
+                  return (
+                    <button
+                      key={p.value}
+                      onClick={() => togglePlatform(p.value)}
+                      className="flex items-center gap-3 p-3 rounded-[12px] text-left transition-all duration-200"
+                      style={{
+                        border: `2px solid ${isSelected ? p.color : "var(--border)"}`,
+                        background: isSelected ? `${p.color}10` : "var(--surface-2)",
+                      }}
+                    >
+                      <div
+                        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                        style={{
+                          background: isSelected ? `${p.color}20` : "var(--surface-3)",
+                          color: isSelected ? p.color : "var(--text-muted)",
+                        }}
+                      >
+                        {p.icon}
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-[14px] font-bold" style={{ color: isSelected ? "var(--text-primary)" : "var(--text-secondary)" }}>
+                          {p.label}
+                        </div>
+                        <div className="text-[11px] text-[var(--text-muted)]">{p.description}</div>
+                      </div>
+                      <div
+                        className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all"
+                        style={{
+                          border: `2px solid ${isSelected ? p.color : "var(--border)"}`,
+                          background: isSelected ? p.color : "transparent",
+                        }}
+                      >
+                        {isSelected && <Check size={11} color="white" strokeWidth={3} />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {error && (
+                <p className="text-[13px] text-red-500 mb-3">{error}</p>
+              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setPhase("prompt")}
+                  className="btn btn-secondary flex-1 justify-center"
+                >
+                  <ArrowLeft size={16} /> Back
+                </button>
+                <button
+                  onClick={handleGenerate}
+                  disabled={!canGenerate}
+                  className="btn btn-primary flex-[2] justify-center"
+                >
+                  Generate ✨
                 </button>
               </div>
             </div>

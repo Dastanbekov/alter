@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { OnboardingData } from "@/types";
 
 interface Props {
@@ -11,82 +11,72 @@ interface Props {
 }
 
 export function OnboardingStep2({ data, onChange, onNext, onBack }: Props) {
-  const canProceed = data.details.trim().length >= 2;
-
-  const config = {
-    project: {
-      title: "What is your project's name?",
-      placeholder: "e.g., Acme SaaS, ProductX, My Startup...",
-      label: "Project Name",
-      hint: null,
-    },
-    blog: {
-      title: "What should we call you?",
-      placeholder: "Your name or nickname...",
-      label: "Name / Nickname",
-      hint: "You can always change this in settings or tell the AI directly which name to use in a specific post.",
-    },
-    other: {
-      title: "Describe briefly",
-      placeholder: "Tell us a bit about why you want to manage social media...",
-      label: "Description",
-      hint: null,
-    },
-  };
-
-  const currentConfig = config[data.purpose || "other"];
+  const canProceed = data.workspaceName.trim() && data.details.trim();
 
   return (
     <div className="glass rounded-[20px] p-6 sm:p-10">
-      <div className="text-center mb-8 sm:mb-9">
-        <h2 className="font-['Outfit'] text-2xl sm:text-[28px] font-bold mb-3 text-[var(--text-primary)]">
-          {currentConfig.title}
+      <div className="mb-8 border-b border-[var(--border)] pb-6">
+        <h2 className="font-['Outfit'] text-[24px] sm:text-[28px] font-bold mb-2 text-[var(--text-primary)]">
+          Here's what we learned about you
         </h2>
         <p className="text-[14px] sm:text-[15px] text-[var(--text-secondary)]">
-          We will use this to generate posts tailored for you.
+          We pulled this from your website. Have a look and fix anything that's not quite right.
         </p>
       </div>
-      <div className="mb-6">
-        <label className="text-[13px] font-semibold text-[var(--text-secondary)] block mb-2">
-          {currentConfig.label}
-        </label>
-        <input
-          id="onboarding-details"
-          type="text"
-          className="input text-[16px] px-[18px] py-[14px]"
-          value={data.details}
-          onChange={(e) => onChange({ details: e.target.value })}
-          placeholder={currentConfig.placeholder}
-          autoFocus
-        />
+
+      <div className="flex flex-col gap-6 mb-8">
+        <div>
+          <label className="block text-[14px] font-medium text-[var(--text-primary)] mb-2">
+            Business name
+          </label>
+          <input
+            type="text"
+            value={data.workspaceName}
+            onChange={(e) => onChange({ workspaceName: e.target.value })}
+            className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded-[12px] px-4 py-3 text-[15px] focus:outline-none focus:border-[#1a7352]"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[14px] font-medium text-[var(--text-primary)] mb-2">
+            Description
+          </label>
+          <textarea
+            value={data.details}
+            onChange={(e) => onChange({ details: e.target.value })}
+            rows={5}
+            className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded-[12px] px-4 py-3 text-[15px] focus:outline-none focus:border-[#1a7352] resize-y"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[14px] font-medium text-[var(--text-primary)] mb-2">
+            Services
+          </label>
+          <input
+            type="text"
+            value={(data.services || []).join(", ")}
+            onChange={(e) => onChange({ services: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+            placeholder="e.g. Web Development, UI/UX Design"
+            className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded-[12px] px-4 py-3 text-[15px] focus:outline-none focus:border-[#1a7352]"
+          />
+          <span className="text-[12px] text-[var(--text-muted)] mt-1.5 block">Separate with commas</span>
+        </div>
       </div>
 
-      {currentConfig.hint && (
-        <div className="flex gap-[10px] p-3 sm:p-4 bg-[rgba(26,115,82,0.08)] border border-[rgba(26,115,82,0.2)] rounded-xl mb-8">
-          <Info size={16} color="#1a7352" className="shrink-0 mt-[2px]" />
-          <p className="text-[12px] sm:text-[13px] text-[var(--text-secondary)] leading-relaxed">
-            {currentConfig.hint}
-          </p>
-        </div>
-      )}
-
-      {!currentConfig.hint && <div className="mb-8" />}
-
-      <div className="flex gap-3">
+      <div className="flex justify-between pt-6 border-t border-[var(--border)] mt-8">
         <button
           onClick={onBack}
-          className="btn btn-secondary btn-lg flex-1 justify-center"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-[12px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-2)] transition-colors"
         >
-          <ArrowLeft size={18} />
-          Back
+          <ArrowLeft size={18} /> Back
         </button>
         <button
           onClick={onNext}
           disabled={!canProceed}
-          className="btn btn-primary btn-lg flex-[2] justify-center"
+          className="flex items-center gap-2 bg-[#d14f3b] text-white px-6 py-2.5 rounded-[12px] font-semibold hover:bg-[#b84331] transition-colors disabled:opacity-50"
         >
-          Next
-          <ArrowRight size={18} />
+          Continue <ArrowRight size={18} />
         </button>
       </div>
     </div>

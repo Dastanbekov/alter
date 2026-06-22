@@ -4,10 +4,11 @@ import { useState } from "react";
 import { OnboardingStep1 } from "./OnboardingStep1";
 import { OnboardingStep2 } from "./OnboardingStep2";
 import { OnboardingStep3 } from "./OnboardingStep3";
+import { OnboardingStep4 } from "./OnboardingStep4";
+import { OnboardingStep5 } from "./OnboardingStep5";
 import type { OnboardingData } from "@/types";
 
-// Platforms step removed — user picks platforms during the in-dashboard tour/first generation
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 5;
 
 interface Props {
   onComplete: (data: OnboardingData) => Promise<void>;
@@ -17,11 +18,15 @@ export function WorkspaceFormFlow({ onComplete }: Props) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<OnboardingData>({
-    purpose: null,
+    purpose: "project",
     details: "",
-    // Default to all platforms; user picks specific ones during the first generation tour
     platforms: ["linkedin", "x", "telegram"],
     workspaceName: "",
+    website: "",
+    services: [],
+    colors: [],
+    fonts: [],
+    brandStyle: [],
   });
 
   const handleFinish = async () => {
@@ -54,7 +59,7 @@ export function WorkspaceFormFlow({ onComplete }: Props) {
 
       {/* Step content */}
       <div
-        className="w-full max-w-[560px] relative z-10 mx-auto px-4 sm:px-0 fade-in"
+        className="w-full max-w-[640px] relative z-10 mx-auto px-4 sm:px-0 fade-in"
         key={step}
       >
         {step === 1 && (
@@ -76,8 +81,22 @@ export function WorkspaceFormFlow({ onComplete }: Props) {
           <OnboardingStep3
             data={data}
             onChange={(updates) => setData((d) => ({ ...d, ...updates }))}
-            onFinish={handleFinish}
+            onNext={() => setStep(4)}
             onBack={() => setStep(2)}
+          />
+        )}
+        {step === 4 && (
+          <OnboardingStep4
+            data={data}
+            onChange={(updates) => setData((d) => ({ ...d, ...updates }))}
+            onNext={() => setStep(5)}
+          />
+        )}
+        {step === 5 && (
+          <OnboardingStep5
+            data={data}
+            onChange={(updates) => setData((d) => ({ ...d, ...updates }))}
+            onFinish={handleFinish}
             loading={loading}
           />
         )}

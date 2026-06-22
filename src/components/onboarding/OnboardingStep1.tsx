@@ -1,7 +1,9 @@
 "use client";
 
-import { Rocket, BookOpen, Lightbulb, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, Globe, FileText, Loader2 } from "lucide-react";
 import type { OnboardingData } from "@/types";
+import toast from "react-hot-toast";
 
 interface Props {
   data: OnboardingData;
@@ -9,112 +11,139 @@ interface Props {
   onNext: () => void;
 }
 
-const OPTIONS = [
-  {
-    value: "project" as const,
-    icon: <Rocket size={28} />,
-    color: "#1a7352",
-    title: "Project",
-    description: "A product, startup, business or company",
-  },
-  {
-    value: "blog" as const,
-    icon: <BookOpen size={28} />,
-    color: "#a855f7",
-    title: "Personal Blog",
-    description: "Personal brand, expert content, or side project",
-  },
-  {
-    value: "other" as const,
-    icon: <Lightbulb size={28} />,
-    color: "#f59e0b",
-    title: "Other",
-    description: "Something unique",
-  },
-];
-
 export function OnboardingStep1({ data, onChange, onNext }: Props) {
-  const canProceed = data.purpose !== null;
+  const [tab, setTab] = useState<"website" | "description">("website");
+  const [loading, setLoading] = useState(false);
+
+  const [localWebsite, setLocalWebsite] = useState(data.website || "");
+  const [localDescription, setLocalDescription] = useState(data.details || "");
+
+  const handleContinue = async () => {
+    if (tab === "website" && !localWebsite.trim()) {
+      toast.error("Please enter your website URL");
+      return;
+    }
+    if (tab === "description" && !localDescription.trim()) {
+      toast.error("Please describe your business");
+      return;
+    }
+
+    setLoading(true);
+    onChange({
+      website: tab === "website" ? localWebsite : "",
+      details: tab === "description" ? localDescription : "",
+    });
+
+    try {
+      const res = await fetch("/api/ai/scrape-brand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          websiteUrl: tab === "website" ? localWebsite : "",
+          description: tab === "description" ? localDescription : "",
+        }),
+      });
+      
+      if (!res.ok) {
+        throw new Error("Failed to parse brand data");
+      }
+
+      const extracted = await res.json();
+      
+      onChange({
+        workspaceName: extracted.name || "",
+        details: extracted.description || "",
+        services: extracted.services || [],
+        colors: extracted.colors || [],
+        fonts: extracted.fonts || [],
+        toneOfVoice: extracted.toneOfVoice || "",
+        targetAudience: extracted.targetAudience || "",
+        brandStyle: extracted.brandStyle || [],
+        tagline: extracted.tagline || "",
+      });
+
+      onNext();
+    } catch (e: any) {
+      toast.error("Could not extract data. You can fill it manually.");
+      onNext(); // Proceed anyway so user can manually fill
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="glass rounded-[20px] p-6 sm:p-10">
-      <div className="text-center mb-8 sm:mb-9">
-        <h2 className="font-['Outfit'] text-2xl sm:text-[28px] font-bold mb-3 text-[var(--text-primary)]">
-          Why do you want to manage social media?
+      <div className="mb-8">
+        <h2 className="font-['Outfit'] text-[24px] sm:text-[32px] font-bold mb-3 text-[var(--text-primary)]">
+          Let's learn about your business
         </h2>
-        <p className="text-[14px] sm:text-[15px] text-[var(--text-secondary)]">
-          This will help us customize the AI to best fit your goals.
+        <p className="text-[15px] sm:text-[16px] text-[var(--text-secondary)] leading-relaxed">
+          Give us your website or a quick description — we'll use it to learn what you do and how you sound, so every post sounds like you.
         </p>
       </div>
-      <div className="flex flex-col gap-3 mb-8">
-        {OPTIONS.map((option) => {
-          const isSelected = data.purpose === option.value;
-          return (
-            <button
-              key={option.value}
-              onClick={() => onChange({ purpose: option.value })}
-              className="flex items-center gap-4 sm:gap-5 p-4 sm:p-5 rounded-[14px] text-left transition-all duration-200 w-full"
-              style={{
-                border: `2px solid ${isSelected ? option.color : "var(--border)"}`,
-                background: isSelected ? `${option.color}12` : "var(--surface-2)",
-              }}
-            >
-              {/* Icon */}
-              <div
-                className="w-12 h-12 sm:w-14 sm:h-14 rounded-[14px] flex items-center justify-center shrink-0 transition-all duration-200"
-                style={{
-                  background: isSelected ? `${option.color}20` : "var(--surface-3)",
-                  border: `1px solid ${isSelected ? option.color + "40" : "var(--border)"}`,
-                  color: isSelected ? option.color : "var(--text-muted)",
-                }}
-              >
-                {option.icon}
-              </div>
 
-              {/* Text */}
-              <div>
-                <div
-                  className="text-[15px] sm:text-[16px] font-bold mb-1 transition-colors duration-200"
-                  style={{ color: isSelected ? "var(--text-primary)" : "var(--text-secondary)" }}
-                >
-                  {option.title}
-                </div>
-                <div className="text-[12px] sm:text-[13px] text-[var(--text-muted)]">
-                  {option.description}
-                </div>
-              </div>
-
-              {/* Check */}
-              {isSelected && (
-                <div
-                  className="ml-auto w-5 h-5 sm:w-[22px] sm:h-[22px] rounded-full flex items-center justify-center shrink-0"
-                  style={{ background: option.color }}
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="3"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-              )}
-            </button>
-          );
-        })}
+      <div className="flex bg-[var(--surface-2)] p-1 rounded-[12px] mb-8">
+        <button
+          onClick={() => setTab("website")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[14px] font-medium rounded-[10px] transition-all ${tab === "website" ? "bg-white text-[var(--text-primary)] shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
+        >
+          <Globe size={16} /> I have a website
+        </button>
+        <button
+          onClick={() => setTab("description")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[14px] font-medium rounded-[10px] transition-all ${tab === "description" ? "bg-white text-[var(--text-primary)] shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
+        >
+          <FileText size={16} /> Describe my business
+        </button>
       </div>
 
-      <button
-        onClick={onNext}
-        disabled={!canProceed}
-        className="btn btn-primary w-full h-[48px] text-[15px] group justify-center mt-4 sm:mt-0"
-      >
-        Next
-        <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-      </button>
+      <p className="text-[13px] text-[var(--text-muted)] mb-4">Pick whichever's easier — you only need one.</p>
+
+      {tab === "website" ? (
+        <div className="mb-8">
+          <label className="flex items-center gap-2 text-[14px] font-medium text-[var(--text-primary)] mb-2">
+            <Globe size={16} /> Your website
+          </label>
+          <input
+            type="url"
+            placeholder="https://www.yourbusiness.com"
+            value={localWebsite}
+            onChange={(e) => setLocalWebsite(e.target.value)}
+            className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded-[12px] px-4 py-3 text-[15px] focus:outline-none focus:border-[#1a7352] transition-colors"
+          />
+        </div>
+      ) : (
+        <div className="mb-8">
+          <label className="flex items-center gap-2 text-[14px] font-medium text-[var(--text-primary)] mb-2">
+            <FileText size={16} /> About your business
+          </label>
+          <textarea
+            placeholder="e.g. We're a family-run Italian catering service in Leeds, specializing in homemade lasagna for weddings and events."
+            value={localDescription}
+            onChange={(e) => setLocalDescription(e.target.value)}
+            rows={4}
+            className="w-full bg-[var(--surface-1)] border border-[var(--border)] rounded-[12px] px-4 py-3 text-[15px] focus:outline-none focus:border-[#1a7352] transition-colors resize-none"
+          />
+        </div>
+      )}
+
+      <div className="flex justify-end pt-6 border-t border-[var(--border)] mt-8">
+        <button
+          onClick={handleContinue}
+          disabled={loading}
+          className="flex items-center gap-2 bg-[#d14f3b] text-white px-6 py-2.5 rounded-[12px] font-semibold hover:bg-[#b84331] transition-colors disabled:opacity-50"
+        >
+          {loading ? (
+            <>
+              <Loader2 size={18} className="animate-spin" /> Extracting Data...
+            </>
+          ) : (
+            <>
+              Continue <ArrowRight size={18} />
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

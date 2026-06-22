@@ -27,8 +27,8 @@ interface Props {
   activeWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onWorkspacesChange: () => void;
-  currentView: "chat" | "scheduled" | "billing" | "story";
-  onSelectView: (view: "chat" | "scheduled" | "billing" | "story") => void;
+  currentView: "chat" | "scheduled" | "billing" | "story" | "planning";
+  onSelectView: (view: "chat" | "scheduled" | "billing" | "story" | "planning") => void;
   onSelectStory?: (storyId: string) => void;
   activeStoryId?: string | null;
   isPro: boolean;
@@ -159,106 +159,102 @@ export function Sidebar({
         </button>
       </div>
 
-      {/* Workspaces */}
-      <div id="tour-workspaces" className={`flex-1 overflow-y-auto ${collapsed ? "p-2 px-2" : "p-3"}`}>
-        {!collapsed && (
-          <div className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-[0.08em] px-2 pb-2 pt-1">
-            Workspaces
-          </div>
-        )}
+      {/* Workspace Switcher */}
+      <div className={`px-3 py-2 ${collapsed ? "flex justify-center" : ""}`}>
+        {!collapsed ? (
+          <div className="relative">
+            <button
+              onClick={() => setExpandedWorkspaces(prev => ({ ...prev, switcher: !prev.switcher }))}
+              className="w-full flex items-center justify-between gap-2.5 rounded-[12px] bg-[var(--surface-2)] hover:bg-[var(--surface-3)] p-2 transition-all border border-[var(--border)]"
+            >
+              {activeWorkspaceId && workspaces.find(w => w.id === activeWorkspaceId) ? (() => {
+                const ws = workspaces.find(w => w.id === activeWorkspaceId)!;
+                return (
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center font-['Outfit'] font-bold text-[13px] shrink-0 bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-white">
+                      {ws.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-[14px] font-semibold text-[var(--text-primary)] truncate max-w-[130px]">{ws.name}</span>
+                  </div>
+                );
+              })() : (
+                <span className="text-[14px] text-[var(--text-muted)] pl-2">Select Workspace</span>
+              )}
+              <ChevronDown size={16} className="text-[var(--text-muted)] mr-1" />
+            </button>
 
-        {workspaces.map((ws) => {
-          const isActive = ws.id === activeWorkspaceId && currentView === "chat";
-          return (
-            <div key={ws.id} className="relative">
-              <button
-                onClick={() => {
-                  onSelectWorkspace(ws.id);
-                  onSelectView("chat");
-                  onCloseMobile?.();
-                }}
-                title={collapsed ? ws.name : undefined}
-                className={`w-full flex items-center gap-2.5 rounded-[10px] border-none cursor-pointer text-left transition-all duration-200 mb-0.5
-                  ${collapsed ? "p-2.5 justify-center" : "py-2.5 px-3 justify-start"}
-                  ${isActive ? "bg-[rgba(26,115,82,0.15)]" : "bg-transparent hover:bg-[var(--surface-3)]"}
-                `}
-              >
-              {/* Avatar */}
-              <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center font-['Outfit'] font-bold text-[13px] shrink-0
-                  ${isActive ? "bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-white border-none" : "bg-[var(--surface-3)] text-[var(--text-muted)] border border-[var(--border)]"}
-                `}
-              >
-                {ws.name.charAt(0).toUpperCase()}
-              </div>
-
-              {!collapsed && (
-                <div className="flex-1 overflow-hidden">
-                  <div
-                    className={`truncate text-[14px] font-semibold ${isActive ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}
+            {expandedWorkspaces.switcher && (
+              <div className="absolute top-[110%] left-0 w-full bg-[var(--surface-1)] border border-[var(--border)] rounded-[12px] shadow-lg py-1.5 z-50 animate-in slide-in-from-top-2">
+                {workspaces.map(ws => (
+                  <button
+                    key={ws.id}
+                    onClick={() => {
+                      onSelectWorkspace(ws.id);
+                      setExpandedWorkspaces(prev => ({ ...prev, switcher: false }));
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[var(--surface-2)] transition-colors"
                   >
-                    {ws.name}
-                  </div>
-                  <div className="text-[11px] text-[var(--text-muted)] flex items-center gap-1 mt-px">
-                    {PURPOSE_ICONS[ws.purpose]}
-                    {ws.purpose === "project"
-                      ? "Project"
-                      : ws.purpose === "blog"
-                      ? "Blog"
-                      : "Other"}
-                  </div>
-                </div>
-              )}
-              </button>
-
-              {/* Expand Workspace Button */}
-              {!collapsed && (
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center font-['Outfit'] font-bold text-[10px] shrink-0 bg-[var(--surface-3)] text-[var(--text-secondary)] border border-[var(--border)]">
+                      {ws.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-[13px] text-[var(--text-primary)] truncate">{ws.name}</span>
+                  </button>
+                ))}
+                <div className="divider my-1"></div>
                 <button
-                  onClick={(e) => toggleWorkspace(e, ws.id)}
-                  className="absolute right-3 top-[18px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-1"
+                  onClick={() => {
+                    setIsModalOpen(true);
+                    setExpandedWorkspaces(prev => ({ ...prev, switcher: false }));
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left text-[#1a7352] hover:bg-[#1a7352]/10 transition-colors"
                 >
-                  {expandedWorkspaces[ws.id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  <Plus size={14} />
+                  <span className="text-[13px] font-medium">New workspace</span>
                 </button>
-              )}
+              </div>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={() => setExpandedWorkspaces(prev => ({ ...prev, switcher: !prev.switcher }))}
+            className="w-10 h-10 rounded-lg flex items-center justify-center font-['Outfit'] font-bold text-[15px] shrink-0 bg-gradient-to-br from-[#1a7352] to-[#2d9e6f] text-white shadow-sm"
+          >
+            {activeWorkspaceId ? workspaces.find(w => w.id === activeWorkspaceId)?.name.charAt(0).toUpperCase() : "W"}
+          </button>
+        )}
+      </div>
 
-              {/* Expanded Posts List */}
-              {!collapsed && expandedWorkspaces[ws.id] && (
-                <div className="w-full flex flex-col pl-11 pr-3 pb-2 gap-1 animate-in slide-in-from-top-2">
-                  {(workspacePosts[ws.id] || []).length === 0 ? (
-                    <div className="text-[11px] text-[var(--text-muted)] py-1">No posts yet</div>
-                  ) : (
-                    workspacePosts[ws.id].map(post => (
-                      <button
-                        key={post.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigator.clipboard.writeText(post.content);
-                          import("react-hot-toast").then(mod => mod.default.success("Post content copied to clipboard!"));
-                        }}
-                        className="text-left truncate w-full text-[12px] text-[var(--text-secondary)] hover:text-[#1a7352] py-1 transition-colors pl-2 border-l-2 border-transparent hover:border-[#1a7352]"
-                      >
-                        <span className="font-semibold capitalize text-[var(--text-primary)] mr-1">{post.platform}:</span>
-                        {post.content.slice(0, 40)}...
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* New workspace button */}
+      <div id="tour-workspaces" className={`flex-1 overflow-y-auto ${collapsed ? "p-2 px-2" : "p-3"}`}>
+        {/* Core Views */}
         <button
-          onClick={() => setIsModalOpen(true)}
-          title={collapsed ? "New workspace" : undefined}
-          className={`w-full flex items-center gap-2.5 rounded-[10px] border border-dashed border-[var(--border)] bg-transparent cursor-pointer text-[var(--text-muted)] text-[13px] font-medium transition-all duration-200 mt-2
+          onClick={() => {
+            onSelectView("chat");
+            onCloseMobile?.();
+          }}
+          className={`w-full flex items-center gap-2.5 rounded-[10px] border-none cursor-pointer text-[14px] font-medium transition-all duration-200 mb-1
             ${collapsed ? "p-2.5 justify-center" : "py-2.5 px-3 justify-start"}
-            hover:border-[var(--border-hover)] hover:text-[var(--text-secondary)]
+            ${currentView === "chat" ? "bg-[rgba(26,115,82,0.15)] text-[var(--text-primary)]" : "bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]"}
           `}
+          title={collapsed ? "Chat" : undefined}
         >
-          <Plus size={16} />
-          {!collapsed && "New workspace"}
+          <Zap size={18} color={currentView === "chat" ? "#1a7352" : undefined} />
+          {!collapsed && <span>Chat & Generate</span>}
+        </button>
+
+        <button
+          onClick={() => {
+            // Need to handle "planning" view in parent component later, but let's assume it maps to "planning"
+            onSelectView("planning" as any);
+            onCloseMobile?.();
+          }}
+          className={`w-full flex items-center gap-2.5 rounded-[10px] border-none cursor-pointer text-[14px] font-medium transition-all duration-200 mb-1
+            ${collapsed ? "p-2.5 justify-center" : "py-2.5 px-3 justify-start"}
+            ${currentView === "planning" ? "bg-[rgba(26,115,82,0.15)] text-[var(--text-primary)]" : "bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]"}
+          `}
+          title={collapsed ? "Planning" : undefined}
+        >
+          <Lightbulb size={18} color={currentView === "planning" ? "#1a7352" : undefined} />
+          {!collapsed && <span>Planning & Strategy</span>}
         </button>
 
         {/* Divider */}

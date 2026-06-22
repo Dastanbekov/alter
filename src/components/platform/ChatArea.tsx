@@ -28,6 +28,8 @@ interface Props {
   onBillingUpdate: () => void;
   onUpgrade: () => void;
   initialGeneratedData?: { context: string; posts: any[] } | null;
+  prefilledPrompt?: string | null;
+  onPromptConsumed?: () => void;
 }
 
 const PLATFORM_INFO: Record<
@@ -63,7 +65,7 @@ const PLATFORM_INFO: Record<
   },
 };
 
-export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade, initialGeneratedData }: Props) {
+export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade, initialGeneratedData, prefilledPrompt, onPromptConsumed }: Props) {
   const connectedPlatforms = workspace.socials.map((s) => s.platform as SocialPlatform);
   
   const [messages, setMessages] = useState<ChatMsg[]>([]);
@@ -130,6 +132,27 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade, i
     el.style.height = "auto";
     el.style.height = Math.min(el.scrollHeight, 140) + "px";
   }, [input]);
+
+  useEffect(() => {
+    if (prefilledPrompt) {
+      // Simulate sending the prompt
+      setInput(prefilledPrompt);
+      if (onPromptConsumed) onPromptConsumed();
+      
+      // Use setTimeout to ensure state is updated before form submission
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.value = prefilledPrompt;
+          // Create a synthetic event
+          const event = new Event('submit', { bubbles: true, cancelable: true });
+          const form = textareaRef.current.closest('form');
+          if (form) {
+            form.dispatchEvent(event);
+          }
+        }
+      }, 50);
+    }
+  }, [prefilledPrompt, onPromptConsumed]);
 
   const handleSend = async () => {
     const text = input.trim();

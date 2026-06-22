@@ -66,11 +66,22 @@ model VerificationToken {
 }
 
 model Workspace {
-  id        String   @id @default(cuid())
-  name      String
-  purpose   String
-  details   String?
-  userId    String
+  id               String   @id @default(cuid())
+  name             String
+  purpose          String
+  details          String?
+  website          String?
+  services         String[] @default([])
+  logoUrl          String?
+  colors           String[] @default([])
+  fonts            String[] @default([])
+  toneOfVoice      String?  @db.Text
+  targetAudience   String?  @db.Text
+  brandStyle       String[] @default([])
+  tagline          String?
+  angle            String?  @db.Text
+  strategyChecklist Json?
+  userId           String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

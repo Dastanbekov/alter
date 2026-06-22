@@ -8,6 +8,7 @@ import { BillingView } from "./BillingView";
 import { StoryCanvas } from "./StoryCanvas";
 import { DashboardTour } from "./DashboardTour";
 import { DashboardOnboarding } from "./DashboardOnboarding";
+import { PlanningView } from "./PlanningView";
 import { Menu } from "lucide-react";
 import type { Workspace, Story } from "@/types";
 
@@ -18,7 +19,7 @@ type TourPhase = "idle" | "tour" | "onboarding" | "done";
 export function DashboardLayout() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<"chat" | "scheduled" | "billing" | "story">("chat");
+  const [currentView, setCurrentView] = useState<"chat" | "scheduled" | "billing" | "story" | "planning">("planning");
   const [billingInfo, setBillingInfo] = useState<{ paidCredits: number; availableFree: number; totalAvailable: number; isPro: boolean; tourCompleted: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -26,6 +27,7 @@ export function DashboardLayout() {
   const [activeStory, setActiveStory] = useState<Story | null>(null);
   const [tourPhase, setTourPhase] = useState<TourPhase>("idle");
   const [tourGeneratedData, setTourGeneratedData] = useState<{ context: string; posts: any[] } | null>(null);
+  const [prefilledPrompt, setPrefilledPrompt] = useState<string | null>(null);
 
   // Fetch story when activeStoryId changes
   useEffect(() => {
@@ -136,6 +138,7 @@ export function DashboardLayout() {
         activeWorkspaceId={activeWorkspaceId}
         onSelectWorkspace={(id) => {
           setActiveWorkspaceId(id);
+          setCurrentView("planning"); // Default to planning view when switching workspace
         }}
         onWorkspacesChange={fetchWorkspaces}
         currentView={currentView}
@@ -166,6 +169,8 @@ export function DashboardLayout() {
           <div className="font-['Outfit'] font-bold text-[16px]">
             {currentView === "chat"
               ? activeWorkspace?.name || "Alter"
+              : currentView === "planning"
+              ? "Strategy & Planning"
               : currentView === "scheduled"
               ? "Scheduled Posts"
               : currentView === "story"
@@ -189,6 +194,14 @@ export function DashboardLayout() {
             workspace={storyWorkspace}
             readOnly
           />
+        ) : currentView === "planning" && activeWorkspace ? (
+          <PlanningView 
+            workspace={activeWorkspace} 
+            onStartChat={(prompt) => {
+              setPrefilledPrompt(prompt);
+              setCurrentView("chat");
+            }} 
+          />
         ) : activeWorkspace ? (
           <ChatArea
             workspace={activeWorkspace}
@@ -196,6 +209,8 @@ export function DashboardLayout() {
             onBillingUpdate={fetchBilling}
             onUpgrade={() => setCurrentView("billing")}
             initialGeneratedData={tourGeneratedData}
+            prefilledPrompt={prefilledPrompt}
+            onPromptConsumed={() => setPrefilledPrompt(null)}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-[var(--text-muted)] p-6 text-center">

@@ -27,7 +27,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { name, purpose, details, platforms } = await req.json();
+    const body = await req.json();
+    const { 
+      name, purpose, details, platforms, 
+      website, services, logoUrl, colors, fonts, toneOfVoice, targetAudience, brandStyle, tagline, angle, strategyChecklist 
+    } = body;
 
     if (!name || !purpose) {
       return NextResponse.json({ error: "Name and purpose are required" }, { status: 400 });
@@ -56,8 +60,19 @@ export async function POST(req: NextRequest) {
     const workspace = await prisma.workspace.create({
       data: {
         name: name.trim(),
-        purpose,
+        purpose: purpose || "other",
         details: details?.trim() || null,
+        website,
+        services: services || [],
+        logoUrl,
+        colors: colors || [],
+        fonts: fonts || [],
+        toneOfVoice,
+        targetAudience,
+        brandStyle: brandStyle || [],
+        tagline,
+        angle,
+        strategyChecklist: strategyChecklist || null,
         userId: session.user.id,
         socials: {
           create: (platforms || []).map((platform: string) => ({ platform })),

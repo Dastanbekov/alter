@@ -1,8 +1,19 @@
 export interface Workspace {
   id: string;
   name: string;
-  purpose: "project" | "blog" | "other";
+  purpose: "project" | "blog" | "other" | string;
   details: string | null;
+  website?: string | null;
+  services?: string[];
+  logoUrl?: string | null;
+  colors?: string[];
+  fonts?: string[];
+  toneOfVoice?: string | null;
+  targetAudience?: string | null;
+  brandStyle?: string[];
+  tagline?: string | null;
+  angle?: string | null;
+  strategyChecklist?: StrategyTask[] | null;
   userId: string;
   socials: WorkspaceSocial[];
   createdAt: Date;
@@ -68,11 +79,29 @@ export interface GeneratedPostItem {
   imageRecommendations?: string[];
 }
 
+export interface StrategyTask {
+  id: string;
+  title: string;
+  description: string;
+  suggestedPrompt: string;
+}
+
 export interface OnboardingData {
-  purpose: "project" | "blog" | "other" | null;
+  purpose: "project" | "blog" | "other" | string | null;
   details: string;
   platforms: SocialPlatform[];
   workspaceName: string;
+  website?: string;
+  services?: string[];
+  logoUrl?: string;
+  colors?: string[];
+  fonts?: string[];
+  toneOfVoice?: string;
+  targetAudience?: string;
+  brandStyle?: string[];
+  tagline?: string;
+  angle?: string;
+  strategyChecklist?: StrategyTask[];
 }
 
 export interface StoryNode {

@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   try {
     const { object } = await generateObject({
       model: deepseek("deepseek-chat"),
-      system: `You are an expert marketing strategist. Based on the provided brand identity, your goal is to formulate a powerful marketing angle and a concrete, actionable to-do list (strategy checklist) that the brand should follow to achieve growth.`,
+      system: `You are an expert marketing strategist. Based on the provided brand identity, your goal is to formulate a powerful marketing angle and a concrete, actionable to-do list (strategy checklist) that the brand should follow to achieve growth. You must return the output as a JSON object matching the requested schema.`,
       prompt: `Here is the brand data:\n${JSON.stringify(brandData, null, 2)}
       
 Generate the following:
@@ -48,8 +48,11 @@ Generate the following:
     });
 
     return NextResponse.json(object);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Strategy generation error:", error);
-    return NextResponse.json({ error: "Failed to generate strategy" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Failed to generate strategy",
+      details: error?.message || String(error)
+    }, { status: 500 });
   }
 }

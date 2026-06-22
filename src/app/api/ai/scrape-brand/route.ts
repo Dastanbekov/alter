@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     const { object } = await generateObject({
       model: deepseek("deepseek-chat"),
       system: `You are an expert brand analyst. Given the content of a company's website or a description, extract and infer their brand identity.
-If some information is missing, use your best judgment to infer it based on the industry and description. For example, if colors aren't explicitly mentioned in the text, suggest appropriate colors for the industry.`,
+If some information is missing, use your best judgment to infer it based on the industry and description. For example, if colors aren't explicitly mentioned in the text, suggest appropriate colors for the industry. You must return the output as a JSON object matching the requested schema.`,
       prompt: `Analyze the following business context:\n\n${contextText}\n\nExtract or infer the following details: Business Name, Description, Services offered, Brand Colors (hex codes or names), Fonts used (if mentioned or typical for the industry), Tone of Voice (e.g., 'professional, inspiring'), Target Audience, Brand Style keywords, and Tagline.`,
       schema: z.object({
         name: z.string().describe("The name of the business or project"),
@@ -73,8 +73,11 @@ If some information is missing, use your best judgment to infer it based on the 
     });
 
     return NextResponse.json(object);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Brand extraction error:", error);
-    return NextResponse.json({ error: "Failed to extract brand details" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Failed to extract brand details", 
+      details: error?.message || String(error) 
+    }, { status: 500 });
   }
 }

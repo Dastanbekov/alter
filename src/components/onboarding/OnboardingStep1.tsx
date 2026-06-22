@@ -45,7 +45,8 @@ export function OnboardingStep1({ data, onChange, onNext }: Props) {
       });
       
       if (!res.ok) {
-        throw new Error("Failed to parse brand data");
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.details || errorData?.error || "Failed to parse brand data");
       }
 
       const extracted = await res.json();
@@ -64,7 +65,8 @@ export function OnboardingStep1({ data, onChange, onNext }: Props) {
 
       onNext();
     } catch (e: any) {
-      toast.error("Could not extract data. You can fill it manually.");
+      console.error(e);
+      toast.error(`Error: ${e.message || "Could not extract data"}`);
       onNext(); // Proceed anyway so user can manually fill
     } finally {
       setLoading(false);

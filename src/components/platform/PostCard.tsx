@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Pencil, Send, Clock, Check, X as XIcon, Zap, Image as ImageIcon, Globe, Smile, MapPin, Trash2 } from "lucide-react";
+import { Pencil, Send, Clock, Check, X as XIcon, Zap, Image as ImageIcon, Globe, Smile, MapPin, Trash2, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import { ScheduleModal } from "./ScheduleModal";
 import type { GeneratedPostItem, Workspace, SocialPlatform } from "@/types";
@@ -56,6 +56,7 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
   const [publishing, setPublishing] = useState(false);
   const [published, setPublished] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [generatingImageFor, setGeneratingImageFor] = useState<number | null>(null);
 
   const [mediaList, setMediaList] = useState<string[]>(post.mediaUrls || []);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,6 +96,35 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
   const charLimit = platform.charLimit;
   const overLimit = charLimit && post.content.length > charLimit;
   const isConnected = workspace.socials.some(s => s.platform === post.platform);
+
+  const handleGenerateImage = async (prompt: string, index: number) => {
+    setGeneratingImageFor(index);
+    try {
+      const res = await fetch("/api/ai/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Failed to generate image");
+        return;
+      }
+      
+      const b64 = `data:image/jpeg;base64,${data.imageBase64}`;
+      const updatedMedia = [...mediaList, b64];
+      setMediaList(updatedMedia);
+
+      if (onUpdate) {
+        onUpdate(post.content, updatedMedia);
+      }
+      toast.success("Image generated!");
+    } catch (e) {
+      toast.error("Failed to generate image");
+    } finally {
+      setGeneratingImageFor(null);
+    }
+  };
 
   const handleRefine = async () => {
     if (!editInstruction.trim()) return;
@@ -349,7 +379,25 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
                       <span className="w-4 h-4 rounded-full bg-[rgba(26,115,82,0.1)] text-[#1a7352] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
                         {idx + 1}
                       </span>
-                      <span className="leading-snug">{rec}</span>
+                      <div className="flex-1 leading-snug">
+                        {rec}
+                        {!published && (
+                          <div className="mt-2">
+                            <button
+                              onClick={() => handleGenerateImage(rec, idx)}
+                              disabled={generatingImageFor !== null}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--surface-2)] hover:bg-[#1a7352]/10 text-[12px] font-semibold text-[var(--text-primary)] hover:text-[#1a7352] transition-colors border border-[var(--border)] hover:border-[#1a7352]/30 disabled:opacity-50"
+                            >
+                              {generatingImageFor === idx ? (
+                                <span className="animate-spin border-[1.5px] border-[#1a7352]/20 border-t-[#1a7352] rounded-full w-3.5 h-3.5" />
+                              ) : (
+                                <Sparkles size={14} className="text-[#1a7352]" />
+                              )}
+                              Generate it!
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>

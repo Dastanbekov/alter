@@ -38,9 +38,10 @@ This is the third tweet.
   linkedin: `Write a LinkedIn post. STRICT RULES:
 - ZERO hashtags. Do NOT use any hashtags.
 - The first 150 characters are the hook (before the "See more" button) - they MUST be extremely engaging or the post will fail.
-- Authentic, grounded tone. AVOID cliché LinkedIn tropes (no "I am thrilled to announce", no "I've spent years...", no fake inspirational fluff). Be direct, raw, and realistic. Speak like a real founder talking to peers.
+- Authentic, grounded tone. AVOID cliché LinkedIn tropes (no "I am thrilled to announce", no fake inspirational fluff). Be direct and realistic. Speak like a real founder talking to peers.
+- DO NOT hallucinate fake backstories, fake past failures, or fake statistics. Stick ONLY to the facts provided in the context.
+- Adapt the length to the context provided. Do NOT artificially pad the post to make it longer. If the context is brief, keep the post concise and to the point.
 - The post must be completely self-sufficient and valuable on its own.
-- Use line breaks for readability. 300-600 words. Write a LONG, detailed post with deep storytelling and valuable insights. Do NOT write short posts.
 - DO NOT use [TWEET_BREAK] or any other delimiter. Just write one continuous post.`,
   
   telegram: `Write a Telegram channel post. Rules:

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { workspaceId, brief, answers, platforms } = await req.json();
+    const { workspaceId, brief, answers, platforms, isTourGeneration } = await req.json();
 
     if (!workspaceId || !brief) {
       return NextResponse.json({ error: "workspaceId and brief are required" }, { status: 400 });
@@ -182,7 +182,7 @@ Return ONLY valid JSON in this exact format:
 
       // Deduct credits (1 per node)
       const nodeCount = parsed.nodes?.length || 0;
-      if (nodeCount > 0) {
+      if (nodeCount > 0 && !isTourGeneration) {
         let { freePostsUsed, paidCredits, freePostsResetAt } = user;
         const now = new Date();
 

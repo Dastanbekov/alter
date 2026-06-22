@@ -99,6 +99,7 @@ export function DashboardOnboarding({ workspaceId, workspaceName, onComplete }: 
             brief: context,
             answers: { platforms: ["linkedin", "x", "telegram"] },
             platforms: ["linkedin", "x", "telegram"],
+            isTourGeneration: true,
           }),
         });
         const planData = await planRes.json();

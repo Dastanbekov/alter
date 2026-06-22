@@ -83,13 +83,23 @@ export function DashboardLayout() {
     setTourPhase("onboarding");
   };
 
-  const handleOnboardingComplete = (data?: { context: string; posts: any[] }) => {
-    // Call API to mark tour completed (affects billing)
-    fetch("/api/user/complete-tour", { method: "PATCH" }).catch(() => {});
+  const handleOnboardingComplete = async (data?: { context: string; posts?: any[]; story?: any }) => {
     setTourPhase("done");
-    if (data) {
-      setTourGeneratedData(data);
+    if (data?.posts) {
+      setTourGeneratedData({ context: data.context, posts: data.posts });
+      setCurrentView("chat");
+    } else if (data?.story) {
+      setActiveStoryId(data.story.id);
+      setCurrentView("story");
     }
+
+    // Call API to mark tour completed (affects billing)
+    try {
+      await fetch("/api/user/complete-tour", { method: "PATCH" });
+    } catch (e) {
+      console.error(e);
+    }
+    
     // Refresh billing info since first generation was free
     fetchBilling();
   };

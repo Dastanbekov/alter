@@ -63,7 +63,7 @@ const FIXED_QUESTIONS: ClarifyingQuestion[] = [
 interface Props {
   workspaceId: string;
   workspaceName: string;
-  onComplete: (data?: { context: string; posts: any[] }) => void;
+  onComplete: (data?: { context: string; posts?: any[]; story?: any }) => void;
 }
 
 export function DashboardOnboarding({ workspaceId, workspaceName, onComplete }: Props) {
@@ -73,7 +73,7 @@ export function DashboardOnboarding({ workspaceId, workspaceName, onComplete }: 
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>(["linkedin", "x", "telegram"]);
   const [error, setError] = useState("");
-  const [generatedData, setGeneratedData] = useState<{ context: string; posts: any[] } | null>(null);
+  const [generatedData, setGeneratedData] = useState<{ context: string; posts?: any[]; story?: any } | null>(null);
 
   const allQuestionsAnswered = FIXED_QUESTIONS.every((q) => answers[q.id]?.trim().length > 0);
   const canGenerate = selectedPlatforms.length > 0;
@@ -88,33 +88,66 @@ export function DashboardOnboarding({ workspaceId, workspaceName, onComplete }: 
     setPhase("generating");
     setError("");
     try {
-      const context = [
-        prompt,
-        ...FIXED_QUESTIONS.map((q) => `${q.label}: ${answers[q.id] || "N/A"}`),
-      ].join("\n");
+      const context = prompt;
 
-      const res = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          context,
-          workspaceId,
-          platforms: selectedPlatforms,
-          isTourGeneration: true, // billing: skip credit deduction
-        }),
-      });
+      if (contentType === "story") {
+        const planRes = await fetch("/api/ai/story-plan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            workspaceId,
+            brief: context,
+            answers: { platforms: ["linkedin", "x", "telegram"] },
+            platforms: ["linkedin", "x", "telegram"],
+          }),
+        });
+        const planData = await planRes.json();
+        if (!planRes.ok) throw new Error(planData.error || "Failed to generate story plan");
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Generation failed");
+        if (planData.phase === "plan") {
+          const saveRes = await fetch("/api/stories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              workspaceId,
+              title: planData.data.title,
+              brief: context,
+              platforms: ["linkedin", "x", "telegram"],
+              nodes: planData.data.nodes,
+            }),
+          });
+          const saved = await saveRes.json();
+          if (!saveRes.ok) throw new Error("Failed to save story");
+
+          setGeneratedData({ context, story: saved });
+          setPhase("done");
+        } else {
+          throw new Error("Story generation requires additional info. Please use the dashboard for stories.");
+        }
+      } else {
+        const res = await fetch("/api/ai/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            context,
+            workspaceId,
+            platforms: selectedPlatforms,
+            isTourGeneration: true, // billing: skip credit deduction
+          }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Generation failed");
+        }
+
+        const responseData = await res.json();
+        setGeneratedData({ context, posts: responseData.posts });
+        setPhase("done");
       }
-
-      const responseData = await res.json();
-      setGeneratedData({ context, posts: responseData.posts });
-      setPhase("done");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
-      setPhase("platforms");
+      setPhase("prompt");
     }
   };
 
@@ -137,8 +170,6 @@ export function DashboardOnboarding({ workspaceId, workspaceName, onComplete }: 
           <h2 className="font-['Outfit'] text-[20px] font-bold text-[var(--text-primary)]">
             {phase === "choose" && "What do you want to create?"}
             {phase === "prompt" && "What's happening?"}
-            {phase === "questions" && "A few quick questions"}
-            {phase === "platforms" && "Which platforms?"}
             {phase === "generating" && "Generating your content..."}
             {phase === "done" && "Your posts are ready! 🎉"}
           </h2>
@@ -210,116 +241,11 @@ export function DashboardOnboarding({ workspaceId, workspaceName, onComplete }: 
                   <ArrowLeft size={16} /> Back
                 </button>
                 <button
-                  onClick={() => setPhase("questions")}
+                  onClick={handleGenerate}
                   disabled={prompt.trim().length < 10}
                   className="btn btn-primary flex-[2] justify-center"
                 >
-                  Next <ArrowRight size={16} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ──── Phase: Questions ──── */}
-          {phase === "questions" && (
-            <div>
-              <div className="flex flex-col gap-4 mb-5">
-                {FIXED_QUESTIONS.map((q) => (
-                  <div key={q.id}>
-                    <label className="text-[13px] font-medium text-[var(--text-secondary)] block mb-1.5">
-                      {q.label}
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full bg-[var(--surface-2)] border border-[var(--border)] rounded-[10px] px-3 py-2.5 text-[14px] outline-none focus:border-[#1a7352] transition-colors"
-                      value={answers[q.id] || ""}
-                      onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
-                      placeholder="Your answer..."
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setPhase("prompt")}
-                  className="btn btn-secondary flex-1 justify-center"
-                >
-                  <ArrowLeft size={16} /> Back
-                </button>
-                <button
-                  onClick={() => setPhase("platforms")}
-                  disabled={!allQuestionsAnswered}
-                  className="btn btn-primary flex-[2] justify-center"
-                >
-                  Next <ArrowRight size={16} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ──── Phase: Platforms ──── */}
-          {phase === "platforms" && (
-            <div>
-              <p className="text-[13px] text-[var(--text-secondary)] mb-4">
-                Select which platforms to generate content for:
-              </p>
-              <div className="flex flex-col gap-2.5 mb-5">
-                {PLATFORM_OPTIONS.map((p) => {
-                  const isSelected = selectedPlatforms.includes(p.value);
-                  return (
-                    <button
-                      key={p.value}
-                      onClick={() => togglePlatform(p.value)}
-                      className="flex items-center gap-3 p-3 rounded-[12px] text-left transition-all duration-200"
-                      style={{
-                        border: `2px solid ${isSelected ? p.color : "var(--border)"}`,
-                        background: isSelected ? `${p.color}10` : "var(--surface-2)",
-                      }}
-                    >
-                      <div
-                        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                        style={{
-                          background: isSelected ? `${p.color}20` : "var(--surface-3)",
-                          color: isSelected ? p.color : "var(--text-muted)",
-                        }}
-                      >
-                        {p.icon}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-[14px] font-bold" style={{ color: isSelected ? "var(--text-primary)" : "var(--text-secondary)" }}>
-                          {p.label}
-                        </div>
-                        <div className="text-[11px] text-[var(--text-muted)]">{p.description}</div>
-                      </div>
-                      <div
-                        className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all"
-                        style={{
-                          border: `2px solid ${isSelected ? p.color : "var(--border)"}`,
-                          background: isSelected ? p.color : "transparent",
-                        }}
-                      >
-                        {isSelected && <Check size={11} color="white" strokeWidth={3} />}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-              {error && (
-                <p className="text-[13px] text-red-500 mb-3">{error}</p>
-              )}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setPhase("questions")}
-                  className="btn btn-secondary flex-1 justify-center"
-                >
-                  <ArrowLeft size={16} /> Back
-                </button>
-                <button
-                  onClick={handleGenerate}
-                  disabled={!canGenerate}
-                  className="btn btn-primary flex-[2] justify-center"
-                >
-                  Generate ✨
+                  Generate
                 </button>
               </div>
             </div>

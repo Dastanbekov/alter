@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { context, workspaceId, platforms } = await req.json();
+    const { context, workspaceId, platforms, isTourGeneration } = await req.json();
 
     if (!context?.trim()) {
       return NextResponse.json({ error: "Context is required" }, { status: 400 });
@@ -69,7 +69,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No platforms selected" }, { status: 400 });
     }
 
-    if (platforms.length > totalAvailable) {
+    // Tour generation: first-time free generation, skip credit check
+    const isFreeFirstGeneration = isTourGeneration === true && !user.tourCompleted;
+
+    if (!isFreeFirstGeneration && platforms.length > totalAvailable) {
       return NextResponse.json({ error: "insufficient_credits", totalAvailable }, { status: 403 });
     }
 
@@ -102,9 +105,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Deduct credits
+    // Deduct credits (skip if this is the free tour generation)
     const postsCount = inputs.length;
-    if (postsCount > 0) {
+    if (postsCount > 0 && !isFreeFirstGeneration) {
       let newFreeUsed = freePostsUsed;
       let newPaid = paidCredits;
 

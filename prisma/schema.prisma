@@ -16,6 +16,7 @@ model User {
   image            String?
   password         String?
   onboarded        Boolean   @default(false)
+  tourCompleted    Boolean   @default(false)
   paidCredits      Int       @default(0)
   freePostsUsed    Int       @default(0)
   freePostsResetAt DateTime?

@@ -6,18 +6,26 @@ import { ChatArea } from "./ChatArea";
 import { ScheduledBoard } from "./ScheduledBoard";
 import { BillingView } from "./BillingView";
 import { StoryCanvas } from "./StoryCanvas";
+import { DashboardTour } from "./DashboardTour";
+import { DashboardOnboarding } from "./DashboardOnboarding";
 import { Menu } from "lucide-react";
 import type { Workspace, Story } from "@/types";
+
+
+
+type TourPhase = "idle" | "tour" | "onboarding" | "done";
 
 export function DashboardLayout() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<"chat" | "scheduled" | "billing" | "story">("chat");
-  const [billingInfo, setBillingInfo] = useState<{ paidCredits: number; availableFree: number; totalAvailable: number; isPro: boolean } | null>(null);
+  const [billingInfo, setBillingInfo] = useState<{ paidCredits: number; availableFree: number; totalAvailable: number; isPro: boolean; tourCompleted: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [activeStoryId, setActiveStoryId] = useState<string | null>(null);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
+  const [tourPhase, setTourPhase] = useState<TourPhase>("idle");
+  const [tourGeneratedData, setTourGeneratedData] = useState<{ context: string; posts: any[] } | null>(null);
 
   // Fetch story when activeStoryId changes
   useEffect(() => {
@@ -60,6 +68,31 @@ export function DashboardLayout() {
     fetchWorkspaces();
     fetchBilling();
   }, [fetchWorkspaces, fetchBilling]);
+
+  // Determine if we should show the tour (only once, for new users)
+  useEffect(() => {
+    if (loading || !billingInfo) return;
+    if (!billingInfo.tourCompleted) {
+      // Small delay so the dashboard renders first
+      const timer = setTimeout(() => setTourPhase("tour"), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, billingInfo]);
+
+  const handleTourComplete = () => {
+    setTourPhase("onboarding");
+  };
+
+  const handleOnboardingComplete = (data?: { context: string; posts: any[] }) => {
+    // Call API to mark tour completed (affects billing)
+    fetch("/api/user/complete-tour", { method: "PATCH" }).catch(() => {});
+    setTourPhase("done");
+    if (data) {
+      setTourGeneratedData(data);
+    }
+    // Refresh billing info since first generation was free
+    fetchBilling();
+  };
 
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) || null;
 
@@ -142,6 +175,7 @@ export function DashboardLayout() {
             billingInfo={billingInfo}
             onBillingUpdate={fetchBilling}
             onUpgrade={() => setCurrentView("billing")}
+            initialGeneratedData={tourGeneratedData}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-[var(--text-muted)] p-6 text-center">
@@ -150,6 +184,20 @@ export function DashboardLayout() {
           </div>
         )}
       </main>
+
+      {/* Dashboard Tour overlay */}
+      {tourPhase === "tour" && (
+        <DashboardTour onComplete={handleTourComplete} />
+      )}
+
+      {/* First generation onboarding overlay */}
+      {tourPhase === "onboarding" && activeWorkspace && (
+        <DashboardOnboarding
+          workspaceId={activeWorkspace.id}
+          workspaceName={activeWorkspace.name}
+          onComplete={handleOnboardingComplete}
+        />
+      )}
     </div>
   );
 }

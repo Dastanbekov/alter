@@ -160,7 +160,7 @@ export function Sidebar({
       </div>
 
       {/* Workspaces */}
-      <div className={`flex-1 overflow-y-auto ${collapsed ? "p-2 px-2" : "p-3"}`}>
+      <div id="tour-workspaces" className={`flex-1 overflow-y-auto ${collapsed ? "p-2 px-2" : "p-3"}`}>
         {!collapsed && (
           <div className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-[0.08em] px-2 pb-2 pt-1">
             Workspaces
@@ -266,12 +266,9 @@ export function Sidebar({
 
         {/* Scheduled posts */}
         <button
+          id="tour-scheduled"
           onClick={() => {
-            if (!isPro) {
-              onSelectView("billing");
-            } else {
-              onSelectView("scheduled");
-            }
+            onSelectView("scheduled");
             onCloseMobile?.();
           }}
           className={`w-full flex items-center gap-2.5 rounded-[10px] border-none cursor-pointer text-[14px] font-medium transition-all duration-200
@@ -284,7 +281,6 @@ export function Sidebar({
           {!collapsed && (
             <div className="flex items-center justify-between flex-1">
               <span>Scheduled Posts</span>
-              {!isPro && <Zap size={14} color="#f59e0b" />}
             </div>
           )}
         </button>

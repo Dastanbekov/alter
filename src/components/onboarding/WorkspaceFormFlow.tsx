@@ -4,10 +4,10 @@ import { useState } from "react";
 import { OnboardingStep1 } from "./OnboardingStep1";
 import { OnboardingStep2 } from "./OnboardingStep2";
 import { OnboardingStep3 } from "./OnboardingStep3";
-import { OnboardingStep4 } from "./OnboardingStep4";
 import type { OnboardingData } from "@/types";
 
-const TOTAL_STEPS = 4;
+// Platforms step removed — user picks platforms during the in-dashboard tour/first generation
+const TOTAL_STEPS = 3;
 
 interface Props {
   onComplete: (data: OnboardingData) => Promise<void>;
@@ -19,7 +19,8 @@ export function WorkspaceFormFlow({ onComplete }: Props) {
   const [data, setData] = useState<OnboardingData>({
     purpose: null,
     details: "",
-    platforms: [],
+    // Default to all platforms; user picks specific ones during the first generation tour
+    platforms: ["linkedin", "x", "telegram"],
     workspaceName: "",
   });
 
@@ -28,8 +29,6 @@ export function WorkspaceFormFlow({ onComplete }: Props) {
     try {
       await onComplete(data);
     } finally {
-      // It's the responsibility of the parent to navigate or close
-      // But we set loading false here in case it failed and we didn't unmount
       setLoading(false);
     }
   };
@@ -77,16 +76,8 @@ export function WorkspaceFormFlow({ onComplete }: Props) {
           <OnboardingStep3
             data={data}
             onChange={(updates) => setData((d) => ({ ...d, ...updates }))}
-            onNext={() => setStep(4)}
-            onBack={() => setStep(2)}
-          />
-        )}
-        {step === 4 && (
-          <OnboardingStep4
-            data={data}
-            onChange={(updates) => setData((d) => ({ ...d, ...updates }))}
             onFinish={handleFinish}
-            onBack={() => setStep(3)}
+            onBack={() => setStep(2)}
             loading={loading}
           />
         )}

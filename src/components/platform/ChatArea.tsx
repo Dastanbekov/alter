@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Zap, AlertCircle, Settings } from "lucide-react";
+import { ArrowUp, Zap, AlertCircle, Settings, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import { PostCard } from "./PostCard";
 import { WorkspaceSettingsModal } from "./WorkspaceSettingsModal";
@@ -27,6 +27,7 @@ interface Props {
   billingInfo: { paidCredits: number; availableFree: number; totalAvailable: number; isPro: boolean } | null;
   onBillingUpdate: () => void;
   onUpgrade: () => void;
+  initialGeneratedData?: { context: string; posts: any[] } | null;
 }
 
 const PLATFORM_INFO: Record<
@@ -62,7 +63,7 @@ const PLATFORM_INFO: Record<
   },
 };
 
-export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }: Props) {
+export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade, initialGeneratedData }: Props) {
   const connectedPlatforms = workspace.socials.map((s) => s.platform as SocialPlatform);
   
   const [messages, setMessages] = useState<ChatMsg[]>([]);
@@ -80,6 +81,43 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedPlatforms(workspace.socials.map((s) => s.platform as SocialPlatform));
   }, [workspace]);
+
+  useEffect(() => {
+    if (initialGeneratedData && messages.length === 0) {
+      const exists = messages.some(m => m.postGroup?.context === initialGeneratedData.context);
+      if (!exists) {
+        const postGroup: GeneratedPostGroup = {
+          id: nanoid(),
+          context: initialGeneratedData.context,
+          posts: initialGeneratedData.posts.map(
+            (p: any) => ({
+              id: nanoid(),
+              platform: p.platform,
+              content: p.content,
+              status: "draft" as const,
+              imageRecommendations: p.imageRecommendations,
+            })
+          ),
+          createdAt: new Date(),
+        };
+
+        const assistantMsg: ChatMsg = {
+          id: nanoid(),
+          role: "assistant",
+          content: "Here are your first posts! 👇",
+          postGroup,
+        };
+
+        const userMsg: ChatMsg = {
+          id: nanoid(),
+          role: "user",
+          content: initialGeneratedData.context,
+        };
+
+        setMessages([userMsg, assistantMsg]);
+      }
+    }
+  }, [initialGeneratedData, messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -543,7 +581,7 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
       {/* Input area */}
       <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--surface-1)] shrink-0 z-10">
         {/* Mode toggle pill */}
-        <div className="flex items-center justify-between mb-3">
+        <div id="tour-mode-switcher" className="flex items-center justify-between mb-3">
           <div className="inline-flex items-center gap-0.5 bg-[var(--surface-3)] rounded-full p-0.5 border border-[var(--border)]">
             <button
               onClick={() => setChatMode("post")}
@@ -579,26 +617,19 @@ export function ChatArea({ workspace, billingInfo, onBillingUpdate, onUpgrade }:
           </div>
           <div className="text-[12px] md:text-[13px] flex items-center gap-2 md:gap-3 shrink-0 ml-auto">
             <span className="hidden sm:inline text-[var(--text-secondary)]">Available: </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity" onClick={onUpgrade}>
               <Zap size={14} color={billingInfo?.totalAvailable ? "#10b981" : "#ef4444"} />
               <strong className="text-[14px] md:text-[16px]" style={{ color: billingInfo?.totalAvailable ? "#10b981" : "#ef4444" }}>
                 {billingInfo?.totalAvailable || 0}
               </strong>
+              <Plus size={16} className="text-[var(--text-secondary)] ml-0.5" />
             </div>
-            {(!billingInfo?.isPro || (billingInfo && billingInfo.totalAvailable <= 2)) && (
-              <button
-                onClick={onUpgrade}
-                className="bg-gradient-to-br from-[rgba(245,158,11,0.1)] to-[rgba(239,68,68,0.1)] border border-[rgba(245,158,11,0.3)] text-[#f59e0b] px-2 py-0.5 md:px-2.5 md:py-1 rounded-full text-[10px] md:text-[11px] font-bold cursor-pointer uppercase tracking-[0.05em] hover:from-[rgba(245,158,11,0.2)] hover:to-[rgba(239,68,68,0.2)] transition-colors"
-              >
-                Top up
-              </button>
-            )}
           </div>
         </div>
 
         {chatMode !== "story" && (
           <>
-            <div className="bg-[var(--surface-2)] border border-[var(--border)] rounded-[16px] px-4 py-3 flex gap-3 items-end transition-colors duration-200 focus-within:border-[rgba(67,56,255,0.5)] shadow-sm">
+            <div id="tour-chat-input" className="bg-[var(--surface-2)] border border-[var(--border)] rounded-[16px] px-4 py-3 flex gap-3 items-end transition-colors duration-200 focus-within:border-[rgba(67,56,255,0.5)] shadow-sm">
               {(() => {
                 const hasPendingQuestionnaire = messages.some(m => m.questionnaire && !m.isFormSubmitted);
                 const isInputDisabled = hasPendingQuestionnaire;

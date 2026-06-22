@@ -17,6 +17,7 @@ export async function GET() {
         freePostsUsed: true,
         freePostsResetAt: true,
         isPro: true,
+        tourCompleted: true,
       },
     });
 
@@ -62,6 +63,7 @@ export async function GET() {
       availableFree,
       totalAvailable,
       isPro: isProActive,
+      tourCompleted: user.tourCompleted,
     });
   } catch (error) {
     console.error("[BILLING_GET]", error);

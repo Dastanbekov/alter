@@ -40,8 +40,7 @@ This is the third tweet.
 - Structure your post logically: 1) Engaging Hook. 2) The Problem or Context. 3) The Solution, Insight or News. 4) A clear Conclusion or Call to Action.
 - FORMATTING: Use frequent blank lines between sentences. Break up paragraphs to make it highly scannable (classic LinkedIn style).
 - Authentic, grounded tone. AVOID cliché LinkedIn tropes (no "I am thrilled to announce", no fake inspirational fluff). Be direct and realistic. Speak like a real founder talking to peers.
-- DO NOT hallucinate fake backstories, fake past failures, or fake statistics. Stick ONLY to the facts provided in the context.
-- Adapt the length to the context provided. Do NOT artificially pad the post to make it longer. If the context is brief, keep the post concise and to the point.
+- LENGTH & DEPTH: Write a substantial, in-depth post (around 200-400 words). If the context is brief, DO NOT invent fake personal stories, past failures, or fake statistics. Instead, expand on the topic by adding valuable industry insights, explaining the "why", discussing the underlying problem being solved, or detailing the benefits.
 - The post must be completely self-sufficient and valuable on its own.
 - DO NOT use [TWEET_BREAK] or any other delimiter. Just write one continuous post.`,
   
@@ -66,6 +65,8 @@ export async function generatePostsForPlatforms(
       : "";
 
     const prompt = `You are a social media content expert writing for a ${item.workspacePurpose === "blog" ? "personal blog" : "project"}.
+
+CURRENT DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (Use this to correctly reference relative time like "today", "tomorrow", etc).
 
 BRAND CONTEXT:
 ${item.workspaceDetails}

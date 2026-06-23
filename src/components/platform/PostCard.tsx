@@ -35,7 +35,6 @@ const PLATFORM_CONFIG: Record<
     ),
     color: "#e7e9ea",
     bg: "rgba(231,233,234,0.08)",
-    charLimit: 280,
   },
   telegram: {
     label: "Telegram",
@@ -296,12 +295,30 @@ export function PostCard({ post, workspace, onUpdate }: Props) {
                         </span>
                       </div>
                       <ul className="space-y-2">
-                        {post.imageRecommendations.map((rec, i) => (
-                          <li key={i} className="text-[13px] text-[var(--text-secondary)] flex items-start gap-2">
+                        {post.imageRecommendations.map((rec, idx) => (
+                          <li key={idx} className="text-[13px] text-[var(--text-secondary)] flex items-start gap-2">
                             <span className="w-4 h-4 rounded-full bg-[rgba(26,115,82,0.1)] text-[#1a7352] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                              {i + 1}
+                              {idx + 1}
                             </span>
-                            <span className="leading-snug">{rec}</span>
+                            <div className="flex-1 leading-snug">
+                              {rec}
+                              {!published && (
+                                <div className="mt-2">
+                                  <button
+                                    onClick={() => handleGenerateImage(rec, idx)}
+                                    disabled={generatingImageFor !== null}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--surface-2)] hover:bg-[#1a7352]/10 text-[12px] font-semibold text-[var(--text-primary)] hover:text-[#1a7352] transition-colors border border-[var(--border)] hover:border-[#1a7352]/30 disabled:opacity-50"
+                                  >
+                                    {generatingImageFor === idx ? (
+                                      <span className="animate-spin border-[1.5px] border-[#1a7352]/20 border-t-[#1a7352] rounded-full w-3.5 h-3.5" />
+                                    ) : (
+                                      <Sparkles size={14} className="text-[#1a7352]" />
+                                    )}
+                                    Generate it!
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </li>
                         ))}
                       </ul>

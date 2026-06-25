@@ -265,6 +265,71 @@ export async function POST(req: NextRequest) {
                 previousTweetId = data.data.id;
               }
             }
+          } else if (platform === "threads") {
+            const threadsData = content.split("[TWEET_BREAK]").map((t: string) => t.trim()).filter(Boolean);
+            let previousMediaId: string | null = null;
+            
+            for (let i = 0; i < threadsData.length; i++) {
+              const textChunk = threadsData[i];
+              
+              // 1. Create Container
+              const containerParams = new URLSearchParams({
+                media_type: "TEXT",
+                text: textChunk,
+                access_token: token,
+              });
+              
+              if (previousMediaId) {
+                containerParams.append("reply_to_id", previousMediaId);
+              }
+
+              // Note: If images are provided, Threads API requires public URLs via image_url.
+              // Since we only have base64, we currently skip images for Threads.
+              if (i === 0 && images && images.length > 0) {
+                console.warn("Images skipped for Threads: Threads API requires public URLs, not base64.");
+              }
+
+              const containerRes = await fetch("https://graph.threads.net/v1.0/me/threads", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: containerParams
+              });
+
+              if (!containerRes.ok) {
+                const err = await containerRes.json();
+                errorMsg = err.error?.message || "Threads Container API Error";
+                console.error("Threads Container API Error:", err);
+                success = false;
+                break;
+              }
+
+              const containerData = await containerRes.json();
+              const creationId = containerData.id;
+
+              // 2. Publish Container
+              const publishParams = new URLSearchParams({
+                creation_id: creationId,
+                access_token: token,
+              });
+
+              const publishRes = await fetch("https://graph.threads.net/v1.0/me/threads_publish", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: publishParams
+              });
+
+              if (!publishRes.ok) {
+                const err = await publishRes.json();
+                errorMsg = err.error?.message || "Threads Publish API Error";
+                console.error("Threads Publish API Error:", err);
+                success = false;
+                break;
+              }
+
+              const publishData = await publishRes.json();
+              previousMediaId = publishData.id; // used for reply_to_id in next iteration
+              success = true;
+            }
           }
 
           if (success) {

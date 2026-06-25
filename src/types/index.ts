@@ -59,7 +59,7 @@ export interface Integration {
   updatedAt: Date;
 }
 
-export type SocialPlatform = "x" | "linkedin" | "telegram";
+export type SocialPlatform = "x" | "linkedin" | "telegram" | "threads";
 export type PostStatus = "draft" | "published" | "scheduled" | "failed";
 
 export interface GeneratedPostGroup {

@@ -6,7 +6,7 @@ const openai = new OpenAI({
 });
 
 export interface GeneratePostsInput {
-  platform: "x" | "linkedin" | "telegram";
+  platform: "x" | "linkedin" | "telegram" | "threads";
   context: string; // what happened / what to post about
   workspacePurpose: string; // "project" | "blog" | "other"
   workspaceDetails: string; // project name or pseudonym
@@ -15,7 +15,7 @@ export interface GeneratePostsInput {
 }
 
 export interface GeneratedPost {
-  platform: "x" | "linkedin" | "telegram";
+  platform: "x" | "linkedin" | "telegram" | "threads";
   content: string;
   imageRecommendations?: string[];
 }
@@ -50,6 +50,20 @@ This is the third tweet.
 - Can be longer than Twitter but concise
 - Can use emoji
 - Feels like talking to subscribers directly`,
+
+  threads: `Write a post for Meta Threads. STRICT RULES:
+- Format: You should write a highly structured Thread (a chain of connected posts). Do NOT write just a single short post if the topic is complex. Use the "3-2-5" rule for depth.
+- Structure: Start the first post with a powerful visual anchor or hook. Then write several more posts continuing the story. Each individual post MUST be under 500 characters, but the overall thread should tell the full story.
+- Output Format: You MUST separate each node in the thread with exactly this text on a new line: [TWEET_BREAK]
+Example:
+This is the first thread node.
+[TWEET_BREAK]
+This is the second thread node.
+[TWEET_BREAK]
+This is the third thread node.
+- Do NOT use labels like "Post 1:" or "Post 2:". Just use the delimiter.
+- Tone/Culture: Sincere, positive/constructive, non-corporate. Absolutely NO engagement bait (e.g. "like if you agree", "drop a comment below"). Be authentic and focus on micro-communities.
+- FORMATTING: Use frequent line breaks to make text readable. Emojis are welcome but don't overdo it. Break down complex topics into numbered lists (e.g., 1/5, 2/5).`,
 };
 
 export async function generatePostsForPlatforms(

@@ -24,6 +24,7 @@ const PLATFORM_LABELS: Record<SocialPlatform, string> = {
   linkedin: "LinkedIn",
   x: "X / Twitter",
   telegram: "Telegram",
+  threads: "Threads",
 };
 
 export function StoryModePanel({ workspace, onBillingUpdate }: Props) {
